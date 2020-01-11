@@ -4,7 +4,7 @@ BASEDIR ?= $(PWD)
 SRCDIR ?= $(BASEDIR)/src
 
 APPNAME ?= idlebot
-APPVER ?= 1.0
+APPVER ?= 1.1
 
 # commands used in the makefile
 PYENV := PYTHONPATH=$(BASEDIR)/indigo-idlerpg/src
@@ -27,7 +27,7 @@ release: build
 
 ################################################################################
 runpy:
-	$(PY) $(SRCDIR)/idlebot.py --config=$(BASEDIR)/idlebot_dev.cfg
+	$(PY) $(SRCDIR)/idlebot.py --config=$(BASEDIR)/idlebot.cfg
 
 ################################################################################
 runc: build
