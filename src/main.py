@@ -2,6 +2,7 @@
 
 import os
 import time
+import random
 
 import logging
 import logging.config
@@ -54,8 +55,9 @@ bot.start()
 # wait for user to quit (Ctrl-C)
 try:
     while 1:
+        sleep_sec = random.randint(180, 300)
+        time.sleep(sleep_sec)
         bot.request_status()
-        time.sleep(60)
 except KeyboardInterrupt:
     print('anceled by user')
 
