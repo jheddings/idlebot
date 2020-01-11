@@ -1,0 +1,4 @@
+[submodule "indigo-idlerpg"]
+  path = indigo-idlerpg
+  url = git@github.com:jheddings/indigo-idlerpg.git
+
