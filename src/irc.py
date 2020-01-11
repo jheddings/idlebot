@@ -228,7 +228,7 @@ class Client:
             self._send('PASS %s' % passwd)
 
         self._send('NICK %s' % self.nickname)
-        self._send('USER %s - - %s' % (self.nickname, self.fullname))
+        self._send('USER %s - %s' % (self.nickname, self.fullname))
 
     #---------------------------------------------------------------------------
     # join this client to the given channel
