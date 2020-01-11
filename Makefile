@@ -4,7 +4,7 @@ BASEDIR ?= $(PWD)
 SRCDIR ?= $(BASEDIR)/src
 
 APPNAME ?= idlebot
-APPVER ?= 1.1
+APPVER ?= 1.2
 
 ################################################################################
 .PHONY: all build release runpy runc rund runpy run distclean
