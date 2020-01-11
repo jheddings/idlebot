@@ -6,10 +6,6 @@ SRCDIR ?= $(BASEDIR)/src
 APPNAME ?= idlebot
 APPVER ?= 1.1
 
-# commands used in the makefile
-PYENV := PYTHONPATH=$(BASEDIR)/indigo-idlerpg/src
-PY := $(PYENV) python3
-
 ################################################################################
 .PHONY: all build release runpy runc rund runpy run distclean
 
@@ -27,7 +23,7 @@ release: build
 
 ################################################################################
 runpy:
-	$(PY) $(SRCDIR)/idlebot.py --config=$(BASEDIR)/idlebot.cfg
+	python3 $(SRCDIR)/main.py --config=$(BASEDIR)/idlebot.cfg
 
 ################################################################################
 runc: build
@@ -39,5 +35,6 @@ rund: release
 
 ################################################################################
 clean:
+	rm -Rf $(SRCDIR)/__pycache__
 	docker rmi --force $(APPNAME):dev
 

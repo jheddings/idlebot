@@ -1,10 +1,10 @@
 FROM python:3.7
 
-COPY src/idlebot.py /usr/local/pybot/
-COPY indigo-idlerpg/src/irc.py /usr/local/pybot/
-COPY indigo-idlerpg/src/idlerpg.py /usr/local/pybot/
+COPY src/main.py /usr/local/pybot/
+COPY src/irc.py /usr/local/pybot/
+COPY src/idlerpg.py /usr/local/pybot/
 COPY idlebot.cfg /etc/idlebot.cfg
 
 RUN pip install pyyaml
 
-CMD ["python", "/usr/local/pybot/idlebot.py", "/etc/idlebot.cfg"]
+CMD ["python", "/usr/local/pybot/main.py", "/etc/idlebot.cfg"]
