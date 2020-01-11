@@ -54,7 +54,7 @@ bot.start()
 # wait for user to quit (Ctrl-C)
 try:
     while 1:
-        bot.update()
+        bot.request_status()
         time.sleep(60)
 except KeyboardInterrupt:
     print('anceled by user')
