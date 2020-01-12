@@ -66,10 +66,9 @@ class IdleBot():
     #---------------------------------------------------------------------------
     def stop(self):
         if self.client.connected is True:
-            # parting causes quite a penalty...
+            # clean everything up gracefully
+            self.client.msg(self.rpg_bot, 'LOGOUT')
             self.client.part(self.rpg_channel, 'goodbye')
-
-            # close everything up
             self.client.quit()
 
         self.online = False
