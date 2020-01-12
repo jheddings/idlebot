@@ -13,7 +13,7 @@ import socket
 import threading
 import logging
 
-# TODO improve connection state handling
+# TODO improve receive buffer handling
 
 # XXX need more error handling for events and daemon execution
 
@@ -41,6 +41,42 @@ class Event(list):
         return "Event(%s)" % list.__repr__(self)
 
 ################################################################################
+class SocketBuffer:
+
+    #---------------------------------------------------------------------------
+    def __init__(self):
+        self.logger = logging.getLogger('idlerpg.IRC.SocketBuffer')
+
+        self._buffer = ''
+
+    #---------------------------------------------------------------------------
+    def __iter__(self):
+        return self
+
+    #---------------------------------------------------------------------------
+    def __next__(self):
+        line = None
+
+        # the last line may be incomplete...  make sure we have a newline
+        if not "\n" in self._buffer:
+            raise StopIteration()
+
+        (line, newbuf) = self._buffer.split("\n", 1)
+        self._buffer = newbuf
+        line = line.strip()
+
+        return line
+
+    #---------------------------------------------------------------------------
+    def __iadd__(self, data):
+        self._buffer += data.decode()
+
+        self.logger.debug(': added %d bytes to socket buffer: total %d bytes',
+                          len(data), len(self._buffer))
+
+        return self
+
+################################################################################
 # a simple event-based IRC client
 #
 # the client will, by default, start a thread when calling connect() to handle
@@ -66,12 +102,12 @@ class Client:
     #   name: the full name used by this client
     #   daemon: start a daemon to manage server messages
     def __init__(self, nick, name, daemon=True):
-        self.logger = logging.getLogger('Plugin.idlerpg.IRC.Client')
+        self.logger = logging.getLogger('idlerpg.IRC.Client')
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.nickname = nick
         self.fullname = name
 
-        self.recvbuf = ''
+        self.recvbuf = SocketBuffer()
         self.connected = False
 
         if (daemon is True):
@@ -118,11 +154,11 @@ class Client:
 
         # receive a block of data at a time
         try:
-            data = self.sock.recv(1024)
+            data = self.sock.recv(4096)
         except socket.error:
             data = None
 
-        if data is None:
+        if data is None or len(data) == 0:
             self._hangup()
 
         return data
@@ -138,42 +174,6 @@ class Client:
         self._xmit(msg + "\n")
 
     #---------------------------------------------------------------------------
-    # return the next line of text
-    def _next(self):
-        if not self.connected: return None
-
-        text = None
-
-        # do the newline check first to ensure any new data is processed after receiving
-
-        # XXX this doesn't seem like the most efficient way to read and process
-        # new lines...  having to look for a \n twice seems redundant
-
-        # if there are no lines in the buffer, we need more data
-        if (not "\n" in self.recvbuf):
-            self.logger.debug(u': no lines in buffer; reading data from socket')
-
-            more = self._recv()
-
-            if more is not None:
-                self.recvbuf += more.decode()
-
-        # if there is a newline in the buffer, we can process the next line
-        if ("\n" in self.recvbuf):
-            self.logger.debug(u': reading next line from buffer; recvbuf:%d', len(self.recvbuf))
-
-            (text, newbuf) = self.recvbuf.split("\n", 1)
-            text = text.strip()
-            self.recvbuf = newbuf
-
-            if (len(text) == 0):
-                text = None
-            else:
-                self.logger.debug(u'< %s', text)
-
-        return text
-
-    #---------------------------------------------------------------------------
     # close the connection; usually unexpectedly
     def _hangup(self):
         self.logger.warn(u'Connection reset by peer.')
@@ -183,6 +183,7 @@ class Client:
     # generate events from the given server message
     #   msg: the full text of the server message
     def _dispatcher(self, msg):
+        if msg is None: return
 
         if (msg.startswith(':')):
             txt = parse_user_message(msg)
@@ -319,11 +320,16 @@ class Client:
     # this method is blocking and should usually be called on a separate thread
     # process server messages and generate events as needed until interrupted
     def communicate(self):
-        message = self._next()
+        more = self._recv()
 
-        while (message is not None):
-            self._dispatcher(message)
-            message = self._next()
+        while (more is not None):
+            self.recvbuf += more
+
+            for line in self.recvbuf:
+                self.logger.debug(u'< %s', line)
+                self._dispatcher(line)
+
+            more = self._recv()
 
 ################################################################################
 # utility methods for parsing IRC messages
