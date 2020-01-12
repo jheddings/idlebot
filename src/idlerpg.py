@@ -47,14 +47,15 @@ class IdleBot():
 
         client.join(self.rpg_channel)
 
-        # TODO register if needed
-        #client.msg('bot', 'REGISTER {0} {1} {2}'.format(username, password, faction))
+        login_msg = 'LOGIN'
+        login_msg += ' ' + self.rpg_username
+        login_msg += ' ' + self.rpg_password
 
-        login_msg = 'LOGIN ' + self.rpg_username + ' ' + self.rpg_password
         client.msg(self.rpg_bot, login_msg)
 
     #---------------------------------------------------------------------------
     def on_notice(self, client, origin, recip, txt):
+        if self._parse_no_account_notice(txt): return
         if self._parse_login_notice(txt): return
 
     #---------------------------------------------------------------------------
@@ -101,6 +102,20 @@ class IdleBot():
         return datetime.timedelta(days, seconds, 0, 0, minutes, hours)
 
     #---------------------------------------------------------------------------
+    def _parse_no_account_notice(self, msg):
+        if not msg.startswith('Sorry, no such account name.'):
+            return False
+
+        register_msg = 'REGISTER'
+        register_msg += ' ' + self.rpg_username
+        register_msg += ' ' + self.rpg_password
+        register_msg += ' ' + self.rpg_class
+
+        self.client.msg('bot', register_msg)
+
+        return True
+
+    #---------------------------------------------------------------------------
     def _parse_login_notice(self, msg):
         if not msg.startswith('Logon successful.'):
             return False
@@ -109,7 +124,8 @@ class IdleBot():
         self.level = None
         self.next = self._parse_next_level(msg)
 
-        self.logger.info('IdleBot Online [%s]; next level: %s', self.rpg_username, self.next)
+        self.logger.info('IdleBot Online [%s]; next level: %s',
+                         self.rpg_username, self.next)
 
         return True
 
@@ -128,7 +144,8 @@ class IdleBot():
         self.level = int(m.group(2))
         self.next = self._parse_next_level(msg)
 
-        self.logger.debug('status - Online (level: %d); next level: %s', self.level, self.next)
+        self.logger.debug('status - Online (level: %d); next level: %s',
+                          self.level, self.next)
 
         return True
 

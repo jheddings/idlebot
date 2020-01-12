@@ -317,7 +317,7 @@ class Client:
         self.logger.debug(u': connection closed')
 
     #---------------------------------------------------------------------------
-    # this method is blocking and should usually be called on a separate thread
+    # this method is blocking and should usually be called on a separate thread.
     # process server messages and generate events as needed until interrupted
     def communicate(self):
         more = self._recv()
