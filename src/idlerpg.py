@@ -8,7 +8,7 @@ import datetime
 import irc
 
 # for parsing server messages...
-online_status_re = re.compile('You are (.*), the level ([0-9]+) (.+)\..* ([0-9]+) days, ([0-9]+):([0-9]+):([0-9]+)$')
+online_status_re = re.compile('You are (.+), the level ([0-9]+) (.+)\..* ([0-9]+) days, ([0-9]+):([0-9]+):([0-9]+)$')
 
 ################################################################################
 class IdleBot():
@@ -75,11 +75,15 @@ class IdleBot():
 
     #---------------------------------------------------------------------------
     def request_status(self):
-        if self.client.connected is not True:
-            self.online = False
+        # status requsts are async...  the bot will send a privmsg back, which
+        # is where we parse the actuall status.
 
-        # this will cause the server to respond for parsing in on_privmsg
-        self.client.msg('bot', 'WHOAMI')
+        # TODO how do we detect if the bot never replies?
+
+        if self.client.connected is True:
+            self.client.msg('bot', 'WHOAMI')
+        else:
+            self.online = False
 
     #---------------------------------------------------------------------------
     def _parse_online_msg(self, msg):
