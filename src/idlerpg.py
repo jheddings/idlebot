@@ -8,7 +8,9 @@ import datetime
 import irc
 
 # for parsing server messages...
-online_status_re = re.compile('You are (.+), the level ([0-9]+) (.+)\..* ([0-9]+) days, ([0-9]+):([0-9]+):([0-9]+)$')
+logon_notice_re = re.compile('(.+), the level ([0-9]+) (.+), is now online')
+online_status_re = re.compile('You are (.+), the level ([0-9]+) (.+)\.')
+next_level_re = re.compile('Next level in ([0-9]+) days, ([0-9]+):([0-9]+):([0-9]+)')
 
 ################################################################################
 class IdleBot():
@@ -53,10 +55,13 @@ class IdleBot():
 
     #---------------------------------------------------------------------------
     def on_privmsg(self, client, origin, recip, txt):
-        if self._parse_online_msg(txt):
+        if self._parse_login_notice(txt):
+            self.logger.info('Bot Online [%d] => %s', self.level, self.next)
+
+        elif self._parse_online_status(txt):
             self.logger.debug('status - Online [%d] => %s', self.level, self.next)
 
-        elif self._parse_offline_msg(txt):
+        elif self._parse_offline_status(txt):
             self.logger.debug('status - Offline')
 
     #---------------------------------------------------------------------------
@@ -86,24 +91,45 @@ class IdleBot():
             self.online = False
 
     #---------------------------------------------------------------------------
-    def _parse_online_msg(self, msg):
-        m = online_status_re.match(msg)
+    def _parse_next_level(self, msg):
+        m = next_level_re.search(msg)
+        if m is None: return None
+
+        days = int(m.group(1))
+        hours = int(m.group(2))
+        minutes = int(m.group(3))
+        seconds = int(m.group(4))
+
+        return datetime.timedelta(days, seconds, 0, 0, minutes, hours)
+
+    #---------------------------------------------------------------------------
+    def _parse_login_notice(self, msg):
+        m = logon_notice_re.match(msg)
         if m is None: return False
 
-        self.online = (m.group(1) == self.rpg_username)
-        self.level = int(m.group(2))
-
-        days = int(m.group(4))
-        hours = int(m.group(5))
-        minutes = int(m.group(6))
-        seconds = int(m.group(7))
-
-        self.next = datetime.timedelta(days, seconds, 0, 0, minutes, hours)
+        msg_user = m.group(1)
+        if msg_user == self.rpg_username:
+            self.online = True
+            self.level = int(m.group(2))
+            self.next = self._parse_next_level(msg)
 
         return True
 
     #---------------------------------------------------------------------------
-    def _parse_offline_msg(self, msg):
+    def _parse_online_status(self, msg):
+        m = online_status_re.match(msg)
+        if m is None: return False
+
+        msg_user = m.group(1)
+        if msg_user == self.rpg_username:
+            self.online = True
+            self.level = int(m.group(2))
+            self.next = self._parse_next_level(msg)
+
+        return True
+
+    #---------------------------------------------------------------------------
+    def _parse_offline_status(self, msg):
         if not msg.startswith('You are not logged in'):
             return False
 
