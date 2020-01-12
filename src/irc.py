@@ -99,17 +99,47 @@ class Client:
     #---------------------------------------------------------------------------
     # send a message to the connected server followed by a newline
     #   msg: the message to send to the server
-    def _send(self, msg):
+    def _xmit(self, msg):
         if not self.connected:
             raise BrokenPipeError('not connected')
 
-        self.logger.debug(u'> %s', msg)
-        self.sock.sendall(msg.encode())
-        self.sock.sendall("\n".encode())
+        try:
+            self.sock.sendall(msg.encode())
+        except socket.error:
+            self._hangup()
 
     #---------------------------------------------------------------------------
-    # receive one line of text
+    # receive the next block of data from the server
     def _recv(self):
+        if not self.connected:
+            raise BrokenPipeError('not connected')
+
+        data = None
+
+        # receive a block of data at a time
+        try:
+            data = self.sock.recv(1024)
+        except socket.error:
+            data = None
+
+        if data is None:
+            self._hangup()
+
+        return data
+
+    #---------------------------------------------------------------------------
+    # send a message to the connected server followed by a newline
+    #   msg: the message to send to the server
+    def _send(self, msg):
+        if not self.connected: return False
+
+        self.logger.debug(u'> %s', msg)
+
+        self._xmit(msg + "\n")
+
+    #---------------------------------------------------------------------------
+    # return the next line of text
+    def _next(self):
         if not self.connected: return None
 
         text = None
@@ -123,12 +153,9 @@ class Client:
         if (not "\n" in self.recvbuf):
             self.logger.debug(u': no lines in buffer; reading data from socket')
 
-            # receive a block of data at a time
-            more = self.sock.recv(4096)
-            if (more is None or len(more) == 0):
-                self.logger.warn(u': no data in socket')
-                self.connected = False
-            else:
+            more = self._recv()
+
+            if more is not None:
                 self.recvbuf += more.decode()
 
         # if there is a newline in the buffer, we can process the next line
@@ -145,6 +172,12 @@ class Client:
                 self.logger.debug(u'< %s', text)
 
         return text
+
+    #---------------------------------------------------------------------------
+    # close the connection; usually unexpectedly
+    def _hangup(self):
+        self.logger.warn(u'Connection reset by peer.')
+        self.connected = False
 
     #---------------------------------------------------------------------------
     # generate events from the given server message
@@ -277,6 +310,7 @@ class Client:
 
         # notify on_quit event handlers
         self.on_quit(self, msg)
+        self.connected = False
 
         self.sock.close()
         self.logger.debug(u': connection closed')
@@ -285,11 +319,11 @@ class Client:
     # this method is blocking and should usually be called on a separate thread
     # process server messages and generate events as needed until interrupted
     def communicate(self):
-        message = self._recv()
+        message = self._next()
 
         while (message is not None):
             self._dispatcher(message)
-            message = self._recv()
+            message = self._next()
 
 ################################################################################
 # utility methods for parsing IRC messages
