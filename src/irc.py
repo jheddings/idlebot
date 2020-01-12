@@ -322,9 +322,11 @@ class Client:
     def communicate(self):
         more = self._recv()
 
+        # keep reading data from the server...
         while (more is not None):
             self.recvbuf += more
 
+            # process all lines we just received...
             for line in self.recvbuf:
                 self.logger.debug(u'< %s', line)
                 self._dispatcher(line)
