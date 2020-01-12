@@ -7,4 +7,4 @@ COPY idlebot.cfg /etc/idlebot.cfg
 
 RUN pip install pyyaml
 
-CMD ["python", "/usr/local/pybot/main.py", "/etc/idlebot.cfg"]
+CMD ["python", "/usr/local/pybot/main.py", "--config=/etc/idlebot.cfg"]
