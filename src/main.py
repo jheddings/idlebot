@@ -55,10 +55,15 @@ bot.start()
 # wait for user to quit (Ctrl-C)
 try:
     while 1:
+        # use a random sleep value...
         sleep_sec = random.randint(180, 300)
         time.sleep(sleep_sec)
+
+        # keep status current
         bot.request_status()
+
 except KeyboardInterrupt:
     print('anceled by user')
 
 bot.stop()
+

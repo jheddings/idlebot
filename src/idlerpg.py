@@ -134,6 +134,8 @@ class IdleBot():
             return False
 
         self.online = False
+        self.next = None
+        self.level = None
 
         return True
 
