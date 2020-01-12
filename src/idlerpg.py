@@ -8,7 +8,6 @@ import datetime
 import irc
 
 # for parsing server messages...
-logon_notice_re = re.compile('(.+), the level ([0-9]+) (.+), is now online')
 online_status_re = re.compile('You are (.+), the level ([0-9]+) (.+)\.')
 next_level_re = re.compile('Next level in ([0-9]+) days, ([0-9]+):([0-9]+):([0-9]+)')
 
@@ -40,6 +39,7 @@ class IdleBot():
         self.client = irc.Client(self.irc_nickname, self.irc_fullname)
         self.client.on_welcome += self.on_welcome
         self.client.on_privmsg += self.on_privmsg
+        self.client.on_notice += self.on_notice
 
     #---------------------------------------------------------------------------
     def on_welcome(self, client, txt):
@@ -54,15 +54,13 @@ class IdleBot():
         client.msg(self.rpg_bot, login_msg)
 
     #---------------------------------------------------------------------------
+    def on_notice(self, client, origin, recip, txt):
+        if self._parse_login_notice(txt): return
+
+    #---------------------------------------------------------------------------
     def on_privmsg(self, client, origin, recip, txt):
-        if self._parse_login_notice(txt):
-            self.logger.info('Bot Online [%d] => %s', self.level, self.next)
-
-        elif self._parse_online_status(txt):
-            self.logger.debug('status - Online [%d] => %s', self.level, self.next)
-
-        elif self._parse_offline_status(txt):
-            self.logger.debug('status - Offline')
+        if self._parse_online_status(txt): return
+        if self._parse_offline_status(txt): return
 
     #---------------------------------------------------------------------------
     def start(self):
@@ -104,14 +102,14 @@ class IdleBot():
 
     #---------------------------------------------------------------------------
     def _parse_login_notice(self, msg):
-        m = logon_notice_re.match(msg)
-        if m is None: return False
+        if not msg.startswith('Logon successful.'):
+            return False
 
-        msg_user = m.group(1)
-        if msg_user == self.rpg_username:
-            self.online = True
-            self.level = int(m.group(2))
-            self.next = self._parse_next_level(msg)
+        self.online = True
+        self.level = None
+        self.next = self._parse_next_level(msg)
+
+        self.logger.info('IdleBot Online [%s]; next level: %s', self.rpg_username, self.next)
 
         return True
 
@@ -121,10 +119,16 @@ class IdleBot():
         if m is None: return False
 
         msg_user = m.group(1)
-        if msg_user == self.rpg_username:
-            self.online = True
-            self.level = int(m.group(2))
-            self.next = self._parse_next_level(msg)
+
+        # the message parsed, but it is not about us...
+        if msg_user != self.rpg_username:
+            return True
+
+        self.online = True
+        self.level = int(m.group(2))
+        self.next = self._parse_next_level(msg)
+
+        self.logger.debug('status - Online (level: %d); next level: %s', self.level, self.next)
 
         return True
 
@@ -136,6 +140,8 @@ class IdleBot():
         self.online = False
         self.next = None
         self.level = None
+
+        self.logger.debug('status - Offline')
 
         return True
 
