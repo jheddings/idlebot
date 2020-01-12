@@ -1,9 +1,7 @@
-## a very basic socket-level IRC client
+## a very basic event-driven IRC client
 
 # helpful resources:
 # https://tools.ietf.org/html/rfc1459 - the full IRC spec
-# https://pythonspot.com/building-an-irc-bot/
-# https://stackoverflow.com/questions/2968408/how-do-i-program-a-simple-irc-bot-in-python
 # https://stackoverflow.com/a/822788/197772 - socket line buffering
 #
 # https://github.com/jaraco/irc - full IRC client in Python
@@ -12,8 +10,6 @@
 import socket
 import threading
 import logging
-
-# TODO improve receive buffer handling
 
 # XXX need more error handling for events and daemon execution
 
