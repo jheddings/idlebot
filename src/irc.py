@@ -13,7 +13,7 @@ import socket
 import threading
 import logging
 
-# XXX may want to track connection state to help provide meaningful error messages
+# TODO improve connection state handling
 
 # XXX need more error handling for events and daemon execution
 
@@ -100,6 +100,9 @@ class Client:
     # send a message to the connected server followed by a newline
     #   msg: the message to send to the server
     def _send(self, msg):
+        if not self.connected:
+            raise BrokenPipeError('not connected')
+
         self.logger.debug(u'> %s', msg)
         self.sock.sendall(msg.encode())
         self.sock.sendall("\n".encode())
@@ -107,6 +110,8 @@ class Client:
     #---------------------------------------------------------------------------
     # receive one line of text
     def _recv(self):
+        if not self.connected: return None
+
         text = None
 
         # do the newline check first to ensure any new data is processed after receiving
