@@ -11,7 +11,7 @@ class SocketBufferTest(unittest.TestCase):
 
     #---------------------------------------------------------------------------
     def test_BufferSizeCheck(self):
-        buf = irc.SocketBuffer()
+        buf = irc.SocketLineBuffer()
 
         txt = "simple line of text\n"
         buf += txt.encode()

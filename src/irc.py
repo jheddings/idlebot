@@ -65,9 +65,6 @@ class LineBuffer():
 
     #---------------------------------------------------------------------------
     def __next__(self):
-        if self._buffer is None:
-            raise StopIteration()
-
         line = self.next()
 
         if line is None:
@@ -81,35 +78,44 @@ class LineBuffer():
         return self
 
     #---------------------------------------------------------------------------
-    # alternate method for getting the next line - slightly faster method
+    # alternate method for getting the next line
     def _unsafe_next_slice(self):
+        if self._buffer is None:
+            self.logger.debug(': empty buffer')
+            return None
+
         eol = self._buffer.find("\n")
         if eol < 0: return None
 
         line = self._buffer[:eol]
-        self._buffer = self._buffer[eol+1:]
+        newbuf = self._buffer[eol+1:]
+
+        # setup remaining buffer if there is any left
+        self._buffer = newbuf if len(newbuf) > 0 else None
 
         return line
 
     #---------------------------------------------------------------------------
-    # alternate method for getting the next line - easier to read method
+    # alternate method for getting the next line
     def _unsafe_next_split(self):
-        if not "\n" in self._buffer: return None
+        if self._buffer is None:
+            self.logger.debug(': empty buffer')
+            return None
+
+        if not "\n" in self._buffer:
+            return None
 
         (line, newbuf) = self._buffer.split("\n", 1)
-        self._buffer = newbuf
+
+        # setup remaining buffer if there is any left
+        self._buffer = newbuf if len(newbuf) > 0 else None
 
         return line
 
     #---------------------------------------------------------------------------
     def next(self):
-        #print('buffer: ', self._buffer)
-
-        if self._buffer is None:
-            return None
-
         self._lock.acquire()
-        line = self._unsafe_next_slice()
+        line = self._unsafe_next_split()
         self._lock.release()
 
         return line
@@ -128,24 +134,20 @@ class LineBuffer():
 
         self._lock.release()
 
-    #---------------------------------------------------------------------------
-    def feed(self, fp):
-        for line in fp:
-            self.append(line)
-
 ################################################################################
 # works much like a LineBuffer, but assumes incoming data is encoded
-class SocketBuffer(LineBuffer):
+class SocketLineBuffer(LineBuffer):
 
     #---------------------------------------------------------------------------
     def __init__(self):
         LineBuffer.__init__(self)
-        self.logger = logging.getLogger('idlerpg.IRC.SocketBuffer')
+        self.logger = logging.getLogger('idlerpg.IRC.SocketLineBuffer')
 
     #---------------------------------------------------------------------------
     def __iadd__(self, data):
         if data is None: return self
 
+        # TODO should we check for different encodings?
         txt = data.decode()
         LineBuffer.__iadd__(self, txt)
 
@@ -182,7 +184,7 @@ class Client():
         self.nickname = nick
         self.fullname = name
 
-        self.recvbuf = SocketBuffer()
+        self.recvbuf = SocketLineBuffer()
         self.connected = False
 
         if (daemon is True):

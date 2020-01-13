@@ -6,6 +6,8 @@ import irc
 # keep logging output to a minumim for testing
 logging.basicConfig(level=logging.FATAL)
 
+# TODO async (multithreaded) append and next test
+
 ################################################################################
 class LineBufferTest(unittest.TestCase):
 
@@ -25,12 +27,13 @@ class LineBufferTest(unittest.TestCase):
         buf = irc.LineBuffer()
 
         with open('test/lipsum.txt') as fp:
-            buf.feed(fp)
+            buf.append(fp.read())
 
-        for line in buf:
-            pass
-
-        # TODO
+        with open('test/lipsum.txt') as fp:
+            for line in fp:
+                txtline = line.strip()
+                bufline = next(buf)
+                self.assertEqual(txtline, bufline)
 
     #---------------------------------------------------------------------------
     def test_MultilineTextInBuffer(self):
