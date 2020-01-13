@@ -87,11 +87,7 @@ class LineBuffer():
         if eol < 0: return None
 
         line = self._buffer[:eol]
-
-        if len(self._buffer) - eol <= 1:
-            self._buffer = None
-        else:
-            self._buffer = self._buffer[eol+1:]
+        self._buffer = self._buffer[eol+1:]
 
         return line
 
