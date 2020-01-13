@@ -11,7 +11,8 @@ import socket
 import threading
 import logging
 
-# XXX need more error handling for events and daemon execution
+# TODO fix interrupt logic - don't raise when shutting down properly
+# TODO need more error handling for events and daemon execution
 
 ################################################################################
 # modified from https://stackoverflow.com/a/2022629/197772
@@ -37,38 +38,120 @@ class Event(list):
         return "Event(%s)" % list.__repr__(self)
 
 ################################################################################
-class SocketBuffer:
+class LineBuffer():
 
     #---------------------------------------------------------------------------
     def __init__(self):
-        self.logger = logging.getLogger('idlerpg.IRC.SocketBuffer')
+        self.logger = logging.getLogger('idlerpg.IRC.LineBuffer')
 
-        self._buffer = ''
+        self._buffer = None
+        self._lock = threading.Lock()
 
     #---------------------------------------------------------------------------
     def __iter__(self):
         return self
 
     #---------------------------------------------------------------------------
-    def __next__(self):
-        line = None
+    def __len__(self):
+        self._lock.acquire()
 
-        # the last line may be incomplete...  make sure we have a newline
-        if not "\n" in self._buffer:
+        if self._buffer is None:
+            size = 0
+        else:
+            size = len(self._buffer)
+
+        self._lock.release()
+        return size
+
+    #---------------------------------------------------------------------------
+    def __next__(self):
+        if self._buffer is None:
             raise StopIteration()
 
-        (line, newbuf) = self._buffer.split("\n", 1)
-        self._buffer = newbuf
-        line = line.strip()
+        line = self.next()
+
+        if line is None:
+            raise StopIteration()
 
         return line
 
     #---------------------------------------------------------------------------
-    def __iadd__(self, data):
-        self._buffer += data.decode()
+    def __iadd__(self, text):
+        self.append(text)
+        return self
+
+    #---------------------------------------------------------------------------
+    # alternate method for getting the next line - slightly faster method
+    def _unsafe_next_slice(self):
+        eol = self._buffer.find("\n")
+        if eol < 0: return None
+
+        line = self._buffer[:eol]
+
+        if len(self._buffer) - eol <= 1:
+            self._buffer = None
+        else:
+            self._buffer = self._buffer[eol+1:]
+
+        return line
+
+    #---------------------------------------------------------------------------
+    # alternate method for getting the next line - easier to read method
+    def _unsafe_next_split(self):
+        if not "\n" in self._buffer: return None
+
+        (line, newbuf) = self._buffer.split("\n", 1)
+        self._buffer = newbuf
+
+        return line
+
+    #---------------------------------------------------------------------------
+    def next(self):
+        #print('buffer: ', self._buffer)
+
+        if self._buffer is None:
+            return None
+
+        self._lock.acquire()
+        line = self._unsafe_next_slice()
+        self._lock.release()
+
+        return line
+
+    #---------------------------------------------------------------------------
+    def append(self, text):
+        self._lock.acquire()
+
+        if self._buffer is None:
+            self._buffer = text
+        else:
+            self._buffer += text
 
         self.logger.debug(': added %d bytes to socket buffer: total %d bytes',
-                          len(data), len(self._buffer))
+                          len(text), len(self._buffer))
+
+        self._lock.release()
+
+    #---------------------------------------------------------------------------
+    def feed(self, fp):
+        for line in fp:
+            self.append(line)
+
+################################################################################
+# works much like a LineBuffer, but assumes incoming data is encoded
+class SocketBuffer(LineBuffer):
+
+    #---------------------------------------------------------------------------
+    def __init__(self):
+        LineBuffer.__init__(self)
+        self.logger = logging.getLogger('idlerpg.IRC.SocketBuffer')
+
+    #---------------------------------------------------------------------------
+    def __iadd__(self, data):
+        if data is None: return self
+
+        txt = data.decode()
+        LineBuffer.__iadd__(self, txt)
 
         return self
 
@@ -90,7 +173,7 @@ class SocketBuffer:
 #   on_notice => func(client, sender, recip, msg)
 #   on_join => func(client, channel)
 #   on_part => func(client, channel, msg)
-class Client:
+class Client():
 
     #---------------------------------------------------------------------------
     # Client initialization
@@ -136,7 +219,8 @@ class Client:
             raise BrokenPipeError('not connected')
 
         try:
-            self.sock.sendall(msg.encode())
+            data = msg.encode()
+            self.sock.sendall(data)
         except socket.error:
             self._hangup()
 

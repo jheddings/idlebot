@@ -6,14 +6,16 @@ SRCDIR ?= $(BASEDIR)/src
 APPNAME ?= idlebot
 APPVER ?= 1.2
 
+PY := PYTHONPATH="$(SRCDIR)" python3
+
 ################################################################################
-.PHONY: all build release runpy runc rund runpy run distclean
+.PHONY: all build test release runpy runc rund runpy run distclean
 
 ################################################################################
 all: build
 
 ################################################################################
-build:
+build: test
 	docker build -t $(APPNAME):dev $(BASEDIR)
 
 ################################################################################
@@ -22,8 +24,12 @@ release: build
 	docker tag $(APPNAME):latest $(APPNAME):$(APPVER)
 
 ################################################################################
+test:
+	$(PY) -m unittest discover -v -s $(BASEDIR)/test
+
+################################################################################
 runpy:
-	python3 $(SRCDIR)/main.py --config=$(BASEDIR)/idlebot.cfg
+	$(PY) $(SRCDIR)/main.py --config=$(BASEDIR)/idlebot.cfg
 
 ################################################################################
 runc: build
