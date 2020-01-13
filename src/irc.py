@@ -42,7 +42,7 @@ class LineBuffer():
 
     #---------------------------------------------------------------------------
     def __init__(self):
-        self.logger = logging.getLogger('idlerpg.IRC.LineBuffer')
+        self.logger = logging.getLogger('irc.LineBuffer')
 
         self._buffer = None
         self._lock = threading.Lock()
@@ -141,7 +141,7 @@ class SocketLineBuffer(LineBuffer):
     #---------------------------------------------------------------------------
     def __init__(self):
         LineBuffer.__init__(self)
-        self.logger = logging.getLogger('idlerpg.IRC.SocketLineBuffer')
+        self.logger = logging.getLogger('irc.SocketLineBuffer')
 
     #---------------------------------------------------------------------------
     def __iadd__(self, data):
@@ -179,7 +179,7 @@ class Client():
     #   name: the full name used by this client
     #   daemon: start a daemon to manage server messages
     def __init__(self, nick, name, daemon=True):
-        self.logger = logging.getLogger('idlerpg.IRC.Client')
+        self.logger = logging.getLogger('irc.Client')
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.nickname = nick
         self.fullname = name
@@ -243,13 +243,16 @@ class Client():
 
     #---------------------------------------------------------------------------
     # send a message to the connected server followed by a newline
-    #   msg: the message to send to the server
-    def _send(self, msg):
-        if not self.connected: return False
+    #   msg: the message to send to the server, supports string formatting
+    #   args: variables for formatting placeholders in msg
+    def _send(self, msg, *args):
+        if not self.connected:
+            return False
 
-        self.logger.debug(u'> %s', msg)
+        fmsg = msg.format(*args)
+        self.logger.debug(u'> %s', fmsg)
 
-        self._xmit(msg + "\n")
+        self._xmit(fmsg + "\n")
 
     #---------------------------------------------------------------------------
     # close the connection; usually unexpectedly
@@ -315,7 +318,7 @@ class Client():
     #   client: the client generating the event (should be self)
     #   txt: the server challenge text in the PING
     def _on_ping(self, client, txt):
-        self._send('PONG :%s' % txt)
+        self._send('PONG :{0}', txt)
 
     #---------------------------------------------------------------------------
     # handle ERROR commands from the server - NOTE servers send ERROR on QUIT
@@ -338,41 +341,41 @@ class Client():
         # startup the daemon if configured...
         if (self.daemon): self.daemon.start()
 
+        if (passwd is not None):
+            self._send('PASS {0}', passwd)
+
+        self._send('NICK {0}', self.nickname)
+        self._send('USER {0} - {1}', self.nickname, self.fullname)
+
         # notify on_connect event handlers
         self.on_connect(self)
-
-        if (passwd is not None):
-            self._send('PASS %s' % passwd)
-
-        self._send('NICK %s' % self.nickname)
-        self._send('USER %s - %s' % (self.nickname, self.fullname))
 
     #---------------------------------------------------------------------------
     # join this client to the given channel
     #   channel: the channel to join
     def join(self, channel):
-        self._send('JOIN %s' % channel)
+        self._send('JOIN {0}', channel)
 
     #---------------------------------------------------------------------------
     # leave the given channel with a parting message
     #   channel: the channel to leave
     #   msg: a parting message
     def part(self, channel, msg):
-        self._send('PART %s :%s' % (channel, msg))
+        self._send('PART {0} :{1}', channel, msg)
 
     #---------------------------------------------------------------------------
     # send a private message to the intended recipient
     #   recip: the user or channel to receive the message
     #   msg: the text of the message
     def msg(self, recip, msg):
-        self._send('PRIVMSG %s :%s' % (recip, msg))
+        self._send('PRIVMSG {0} :{1}', recip, msg)
 
     #---------------------------------------------------------------------------
     # set the mode of the given user or channel
     #   nick: the user nickname or channel name
     #   flags: the flags to set on the target
     def mode(self, nick, flags):
-        self._send('MODE %s %s' % (nick, flags))
+        self._send('MODE {0} {1}', nick, flags)
 
     #---------------------------------------------------------------------------
     # close the connection to the server and process all remaining server messages
@@ -381,7 +384,7 @@ class Client():
         if (msg is None):
             self._send('QUIT')
         else:
-            self._send('QUIT :%s' % msg)
+            self._send('QUIT :{0}', msg)
 
         # wait for the deamon to exit...
         if (self.daemon is not None):
