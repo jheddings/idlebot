@@ -75,29 +75,14 @@ class LineBuffer():
 
     #---------------------------------------------------------------------------
     def __iadd__(self, text):
+        if text is None:
+            return self
+
         self.append(text)
+
         return self
 
     #---------------------------------------------------------------------------
-    # alternate method for getting the next line
-    def _unsafe_next_slice(self):
-        if self._buffer is None:
-            self.logger.debug(': empty buffer')
-            return None
-
-        eol = self._buffer.find("\n")
-        if eol < 0: return None
-
-        line = self._buffer[:eol]
-        newbuf = self._buffer[eol+1:]
-
-        # setup remaining buffer if there is any left
-        self._buffer = newbuf if len(newbuf) > 0 else None
-
-        return line
-
-    #---------------------------------------------------------------------------
-    # alternate method for getting the next line
     def _unsafe_next_split(self):
         if self._buffer is None:
             self.logger.debug(': empty buffer')
@@ -106,6 +91,7 @@ class LineBuffer():
         if not "\n" in self._buffer:
             return None
 
+        # grab the current line and remaining buffer
         (line, newbuf) = self._buffer.split("\n", 1)
 
         # remove carriage returns if present
@@ -149,11 +135,12 @@ class SocketLineBuffer(LineBuffer):
 
     #---------------------------------------------------------------------------
     def __iadd__(self, data):
-        if data is None: return self
+        if data is None:
+            return self
 
         # TODO should we check for different encodings?
-        txt = data.decode()
-        LineBuffer.__iadd__(self, txt)
+        text = data.decode()
+        self.append(text)
 
         return self
 
