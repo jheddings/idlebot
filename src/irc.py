@@ -8,6 +8,7 @@
 # consider using the client or simple bot implementation
 
 import re
+import sys
 import socket
 import threading
 import logging
@@ -107,6 +108,10 @@ class LineBuffer():
         self._lock.acquire()
         line = self._unsafe_next_split()
         self._lock.release()
+
+        # python2 requires us to raise here...
+        if sys.version_info < (3, 0) and line is None:
+            raise StopIteration()
 
         return line
 
