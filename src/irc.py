@@ -7,6 +7,7 @@
 # https://github.com/jaraco/irc - full IRC client in Python
 # consider using the client or simple bot implementation
 
+import re
 import socket
 import threading
 import logging
@@ -106,6 +107,9 @@ class LineBuffer():
             return None
 
         (line, newbuf) = self._buffer.split("\n", 1)
+
+        # remove carriage returns if present
+        line = line.rstrip("\r")
 
         # setup remaining buffer if there is any left
         self._buffer = newbuf if len(newbuf) > 0 else None

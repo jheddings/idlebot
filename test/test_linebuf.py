@@ -36,6 +36,21 @@ class LineBufferTest(unittest.TestCase):
                 self.assertEqual(txtline, bufline)
 
     #---------------------------------------------------------------------------
+    def test_WindowsNewlines(self):
+        buf = irc.LineBuffer()
+
+        buf += "this is two\r\nlines of text\r\n"
+
+        line = next(buf)
+        self.assertEqual(line, 'this is two')
+
+        line = next(buf)
+        self.assertEqual(line, 'lines of text')
+
+        with self.assertRaises(StopIteration):
+            line = next(buf)
+
+    #---------------------------------------------------------------------------
     def test_MultilineTextInBuffer(self):
         buf = irc.LineBuffer()
 
