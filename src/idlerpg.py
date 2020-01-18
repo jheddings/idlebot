@@ -3,7 +3,8 @@
 
 import re
 import logging
-import datetime
+
+from datetime import timedelta, datetime
 
 import irc
 
@@ -35,6 +36,8 @@ class IdleBot():
         self.online = False
         self.next = None
         self.level = None
+
+        self._pending_status_request = None
 
         self.client = irc.Client(self.irc_nickname, self.irc_fullname)
         self.client.on_welcome += self.on_welcome
@@ -78,14 +81,18 @@ class IdleBot():
         self.online = False
 
     #---------------------------------------------------------------------------
+    # send a status request to the server.  since this will message the game bot,
+    # be careful calling this excessively as it may be flagged as malicious
     def request_status(self):
-        # status requsts are async...  the bot will send a privmsg back, which
-        # is where we parse the actuall status.
 
         # TODO how do we detect if the bot never replies?
+        if self._pending_status_request is not None:
+            return
 
+        # request our current level from the game bot
         if self.client.connected is True:
             self.client.msg('bot', 'WHOAMI')
+            self._pending_status_request = datetime.now()
         else:
             self.online = False
 
@@ -99,7 +106,7 @@ class IdleBot():
         minutes = int(m.group(3))
         seconds = int(m.group(4))
 
-        return datetime.timedelta(days, seconds, 0, 0, minutes, hours)
+        return timedelta(days, seconds, 0, 0, minutes, hours)
 
     #---------------------------------------------------------------------------
     def _parse_no_account_notice(self, msg):
@@ -146,6 +153,8 @@ class IdleBot():
 
         self.logger.debug('status - Online (level: %d); next level: %s',
                           self.level, self.next)
+
+        self._pending_status_request = None
 
         return True
 
