@@ -13,7 +13,6 @@ import socket
 import threading
 import logging
 
-# TODO fix interrupt logic - don't raise when shutting down properly
 # TODO need more error handling for events and daemon execution
 
 ################################################################################
@@ -234,6 +233,7 @@ class Client():
 
         if data is None or len(data) == 0:
             self._hangup()
+            data = None
 
         return data
 
