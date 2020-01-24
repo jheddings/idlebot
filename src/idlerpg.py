@@ -13,6 +13,8 @@ online_status_re = re.compile('You are (.+), the level ([0-9]+) (.+)\.')
 next_level_re = re.compile('Next level in ([0-9]+) days, ([0-9]+):([0-9]+):([0-9]+)')
 
 ################################################################################
+# Events => Handler Function
+#   on_status_update => func(bot)
 class IdleBot():
 
     #---------------------------------------------------------------------------
@@ -34,37 +36,19 @@ class IdleBot():
         self.rpg_class = conf['player_class']
 
         self.online = False
-        self.next = None
+        self.next_level = None
         self.level = None
+
+        self.on_status_update = irc.Event()
 
         self._pending_status_request = None
 
         self.client = irc.Client(self.irc_nickname, self.irc_fullname)
-        self.client.on_welcome += self.on_welcome
-        self.client.on_privmsg += self.on_privmsg
-        self.client.on_notice += self.on_notice
+        self.client.on_welcome += self._on_welcome
+        self.client.on_privmsg += self._on_privmsg
+        self.client.on_notice += self._on_notice
 
-    #---------------------------------------------------------------------------
-    def on_welcome(self, client, txt):
-        self.logger.debug('welcome received... joining IdleRPG')
-
-        client.join(self.rpg_channel)
-
-        login_msg = 'LOGIN'
-        login_msg += ' ' + self.rpg_username
-        login_msg += ' ' + self.rpg_password
-
-        client.msg(self.rpg_bot, login_msg)
-
-    #---------------------------------------------------------------------------
-    def on_notice(self, client, origin, recip, txt):
-        if self._parse_no_account_notice(txt): return
-        if self._parse_login_notice(txt): return
-
-    #---------------------------------------------------------------------------
-    def on_privmsg(self, client, origin, recip, txt):
-        if self._parse_online_status(txt): return
-        if self._parse_offline_status(txt): return
+        self.on_status_update += self._on_status_update
 
     #---------------------------------------------------------------------------
     def start(self):
@@ -127,12 +111,9 @@ class IdleBot():
         if not msg.startswith('Logon successful.'):
             return False
 
-        self.online = True
-        self.level = None
-        self.next = self._parse_next_level(msg)
+        nxtlvl = self._parse_next_level(msg)
 
-        self.logger.info('IdleBot Online [%s]; next level: %s',
-                         self.rpg_username, self.next)
+        self._update_status(True, None, nxtlvl)
 
         return True
 
@@ -147,13 +128,10 @@ class IdleBot():
         if msg_user != self.rpg_username:
             return True
 
-        self.online = True
-        self.level = int(m.group(2))
-        self.next = self._parse_next_level(msg)
+        level = int(m.group(2))
+        nxtlvl = self._parse_next_level(msg)
 
-        self.logger.debug('status - Online (level: %d); next level: %s',
-                          self.level, self.next)
-
+        self._update_status(True, level, nxtlvl)
         self._pending_status_request = None
 
         return True
@@ -163,11 +141,61 @@ class IdleBot():
         if not msg.startswith('You are not logged in'):
             return False
 
-        self.online = False
-        self.next = None
-        self.level = None
-
-        self.logger.debug('status - Offline')
+        self._update_status(False, None, None)
 
         return True
+
+    #---------------------------------------------------------------------------
+    def _update_status(self, online=None, level=False, nxtlvl=False):
+
+        dirty = False
+
+        if online is not None and self.online != online:
+            self.online = online
+            dirty = True
+
+        if level is not False and self.level != level:
+            self.level = level
+            dirty = True
+
+        if nxtlvl is not False and self.next != nxtlvl:
+            self.level = nxtlvl
+            dirty = True
+
+        # TODO better logging for status changes
+        self.logger.debug('IdleBot Online [%s]; next level: %s',
+                         self.rpg_username, self.next_level)
+
+        if dirty:
+            self.on_status_update(self)
+
+    #---------------------------------------------------------------------------
+    def _on_welcome(self, client, txt):
+        self.logger.debug('welcome received... joining IdleRPG')
+
+        client.join(self.rpg_channel)
+
+        login_msg = 'LOGIN'
+        login_msg += ' ' + self.rpg_username
+        login_msg += ' ' + self.rpg_password
+
+        client.msg(self.rpg_bot, login_msg)
+
+    #---------------------------------------------------------------------------
+    def _on_notice(self, client, origin, recip, txt):
+        if self._parse_no_account_notice(txt): return
+        if self._parse_login_notice(txt): return
+
+    #---------------------------------------------------------------------------
+    def _on_privmsg(self, client, origin, recip, txt):
+        if self._parse_online_status(txt): return
+        if self._parse_offline_status(txt): return
+
+    #---------------------------------------------------------------------------
+    def _on_status_update(self, bot):
+        if bot.online is True:
+            self.logger.info('IdleBot Online [%s]; next level: %s',
+                            self.rpg_username, self.next_level)
+        else:
+            self.logger.info('IdleBot Offline [%s]', self.rpg_username)
 
