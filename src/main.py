@@ -9,8 +9,6 @@ import logging.config
 
 import idlerpg
 
-logger = logging.getLogger('IdleBot')
-
 ################################################################################
 def parse_args():
     import argparse
@@ -29,7 +27,7 @@ def load_config(config_file):
     import yaml
 
     if not os.path.exists(config_file):
-        logging.warning('config file does not exist: %s', config_file)
+        logging.warning('!! config file does not exist: %s', config_file)
         return None
 
     with open(config_file, 'r') as fp:
@@ -38,9 +36,17 @@ def load_config(config_file):
     if 'Logging' in conf:
         logging.config.dictConfig(conf['Logging'])
 
-    logging.debug('config file loaded: %s', config_file)
+    logging.debug('!! config file loaded: %s', config_file)
 
     return conf
+
+################################################################################
+def on_status_update(bot):
+    if bot.online is True:
+        logging.info('!! IdleBot Online [%s]; next level: %s',
+                     bot.rpg_username, bot.next_level)
+    else:
+        logging.info('!! IdleBot Offline [%s]', bot.rpg_username)
 
 ################################################################################
 ## MAIN ENTRY
@@ -50,6 +56,11 @@ conf = load_config(args.config)
 
 # fire up the game...
 bot = idlerpg.IdleBot(conf['IdleRPG'])
+
+# register event handlers
+bot.on_status_update += on_status_update
+
+# let 'er rip
 bot.start()
 
 # wait for user to quit (Ctrl-C)

@@ -36,8 +36,8 @@ class IdleBot():
         self.rpg_class = conf['player_class']
 
         self.online = False
-        self.next_level = None
         self.level = None
+        self.next_level = None
 
         self.on_status_update = irc.Event()
 
@@ -47,8 +47,6 @@ class IdleBot():
         self.client.on_welcome += self._on_welcome
         self.client.on_privmsg += self._on_privmsg
         self.client.on_notice += self._on_notice
-
-        self.on_status_update += self._on_status_update
 
     #---------------------------------------------------------------------------
     def start(self):
@@ -113,7 +111,7 @@ class IdleBot():
 
         nxtlvl = self._parse_next_level(msg)
 
-        self._update_status(True, None, nxtlvl)
+        self._update_status(True, False, nxtlvl)
 
         return True
 
@@ -158,14 +156,16 @@ class IdleBot():
             self.level = level
             dirty = True
 
-        if nxtlvl is not False and self.next != nxtlvl:
-            self.level = nxtlvl
+        if nxtlvl is not False and self.next_level != nxtlvl:
+            self.next_level = nxtlvl
             dirty = True
 
-        # TODO better logging for status changes
-        self.logger.debug('IdleBot Online [%s]; next level: %s',
-                         self.rpg_username, self.next_level)
+        # TODO improve debug logging for status changes
+        self.logger.debug('status [%s] -- online:%s level:%s next:%s',
+                         self.rpg_username, self.online, self.level, self.next_level)
 
+        # XXX do we need to be worried about a dirty flag since the next_level
+        # status will most often change on any of the regular updates?
         if dirty:
             self.on_status_update(self)
 
@@ -190,12 +190,4 @@ class IdleBot():
     def _on_privmsg(self, client, origin, recip, txt):
         if self._parse_online_status(txt): return
         if self._parse_offline_status(txt): return
-
-    #---------------------------------------------------------------------------
-    def _on_status_update(self, bot):
-        if bot.online is True:
-            self.logger.info('IdleBot Online [%s]; next level: %s',
-                            self.rpg_username, self.next_level)
-        else:
-            self.logger.info('IdleBot Offline [%s]', self.rpg_username)
 
