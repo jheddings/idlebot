@@ -4,7 +4,7 @@ BASEDIR ?= $(PWD)
 SRCDIR ?= $(BASEDIR)/src
 
 APPNAME ?= idlebot
-APPVER ?= 1.2
+APPVER ?= 1.3
 
 PY := PYTHONPATH="$(SRCDIR)" python3
 
