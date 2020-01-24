@@ -10,7 +10,7 @@ import irc
 
 # for parsing server messages...
 online_status_re = re.compile('You are (.+), the level ([0-9]+) (.+)\.')
-next_level_re = re.compile('Next level in ([0-9]+) days, ([0-9]+):([0-9]+):([0-9]+)')
+next_level_re = re.compile('Next level in ([0-9]+) days?, ([0-9]+):([0-9]+):([0-9]+)')
 
 ################################################################################
 # Events => Handler Function
@@ -66,6 +66,8 @@ class IdleBot():
     # send a status request to the server.  since this will message the game bot,
     # be careful calling this excessively as it may be flagged as malicious
     def request_status(self):
+        if self.client.connected is not True:
+            raise ConnectionError('not connected')
 
         # TODO how do we detect if the bot never replies?
         if self._pending_status_request is not None:
