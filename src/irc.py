@@ -397,6 +397,8 @@ class Client():
     # this method is blocking and should usually be called on a separate thread.
     # process server messages and generate events as needed until interrupted
     def communicate(self):
+        self.logger.debug(u': begin comm loop')
+
         more = self._recv()
 
         # keep reading data from the server...
@@ -409,6 +411,8 @@ class Client():
                 self._dispatcher(line)
 
             more = self._recv()
+
+        self.logger.debug(u': end comm loop')
 
 ################################################################################
 # utility methods for parsing IRC messages
