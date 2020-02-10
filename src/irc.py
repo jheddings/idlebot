@@ -143,8 +143,17 @@ class SocketLineBuffer(LineBuffer):
             return self
 
         # TODO should we check for different encodings?
-        text = data.decode()
-        self.append(text)
+        # TODO or use an error handler such as 'replace'?
+
+        try:
+            text = data.decode(encoding='utf-8')
+
+        except UnicodeDecodeError:
+            self.logger.warn('Could not decode buffer data.')
+            text = None
+
+        if text is not None:
+            self.append(text)
 
         return self
 
