@@ -25,13 +25,18 @@ def parse_args():
 ################################################################################
 def load_config(config_file):
     import yaml
+    
+    try:
+        from yaml import CLoader as YamlLoader
+    except ImportError:
+        from yaml import Loader as YamlLoader
 
     if not os.path.exists(config_file):
         logging.warning('!! config file does not exist: %s', config_file)
         return None
 
     with open(config_file, 'r') as fp:
-        conf = yaml.load(fp, Loader=yaml.CLoader)
+        conf = yaml.load(fp, Loader=YamlLoader)
 
     if 'Logging' in conf:
         logging.config.dictConfig(conf['Logging'])
