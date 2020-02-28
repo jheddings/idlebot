@@ -17,14 +17,14 @@ all: build
 .PHONY: build
 
 build: test
-	docker build -t $(APPNAME):dev $(BASEDIR)
+	docker image build --tag $(APPNAME):dev $(BASEDIR)
 
 ################################################################################
 .PHONY: release
 
 release: build
-	docker tag $(APPNAME):dev $(APPNAME):latest
-	docker tag $(APPNAME):latest $(APPNAME):$(APPVER)
+	docker image tag $(APPNAME):dev $(APPNAME):latest
+	docker image tag $(APPNAME):latest $(APPNAME):$(APPVER)
 
 ################################################################################
 .PHONY: test
@@ -42,24 +42,24 @@ run:
 .PHONY: runc
 
 runc: build
-	docker run -it $(APPNAME):dev
+	docker container run --interactive --tty $(APPNAME):dev
 
 ################################################################################
 .PHONY: rund
 
 rund: release
-	docker run --rm --detach $(APPNAME):latest
+	docker container run --rm --detach $(APPNAME):latest
 
 ################################################################################
 .PHONY: clean
 
 clean:
 	rm -Rf $(SRCDIR)/__pycache__
-	docker rmi --force $(APPNAME):dev
+	docker image rm --force $(APPNAME):dev
 
 ################################################################################
 .PHONY: clobber
 
 clobber: clean
-	docker rmi --force $(APPNAME):latest
+	docker image rm --force $(APPNAME):latest
 
