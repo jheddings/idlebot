@@ -25,7 +25,7 @@ def parse_args():
 ################################################################################
 def load_config(config_file):
     import yaml
-    
+
     try:
         from yaml import CLoader as YamlLoader
     except ImportError:

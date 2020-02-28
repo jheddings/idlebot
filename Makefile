@@ -29,6 +29,8 @@ release: build
 ################################################################################
 .PHONY: test
 
+# TODO use a container for tests...
+
 test:
 	$(PY) -m unittest discover -v -s $(BASEDIR)/test
 
