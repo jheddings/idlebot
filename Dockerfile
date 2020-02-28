@@ -1,5 +1,6 @@
 FROM python:3.7
 
+RUN pip install --upgrade pip
 RUN pip install pyyaml
 
 COPY src/main.py /usr/local/pybot/
