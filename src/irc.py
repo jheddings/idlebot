@@ -444,4 +444,3 @@ def parse_user_message(content):
 def parse_first_word(content):
     # TODO add error checking
     return content.split(' ', 1)[0]
-

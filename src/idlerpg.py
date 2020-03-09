@@ -192,4 +192,3 @@ class IdleBot():
     def _on_privmsg(self, client, origin, recip, txt):
         if self._parse_online_status(txt): return
         if self._parse_offline_status(txt): return
-
