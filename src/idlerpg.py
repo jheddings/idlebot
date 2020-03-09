@@ -9,8 +9,8 @@ from datetime import timedelta, datetime
 import irc
 
 # for parsing server messages...
-online_status_re = re.compile('You are (.+), the level ([0-9]+) (.+)\.')
-next_level_re = re.compile('Next level in ([0-9]+) days?, ([0-9]+):([0-9]+):([0-9]+)')
+online_status_re = re.compile(r'You are (.+), the level ([0-9]+) (.+)\.')
+next_level_re = re.compile(r'Next level in ([0-9]+) days?, ([0-9]+):([0-9]+):([0-9]+)')
 
 ################################################################################
 # Events => Handler Function
