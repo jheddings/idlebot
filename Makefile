@@ -57,6 +57,8 @@ rund: release
 
 clean:
 	rm -Rf $(SRCDIR)/__pycache__
+	rm -f $(SRCDIR)/*.pyc
+	rm -f $(BASEDIR)/test/*.pyc
 	docker image rm --force $(APPNAME):dev
 
 ################################################################################
