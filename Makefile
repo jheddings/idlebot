@@ -56,14 +56,14 @@ rund: release
 .PHONY: clean
 
 clean:
-	rm -Rf $(SRCDIR)/__pycache__
 	rm -f $(SRCDIR)/*.pyc
+	rm -Rf $(SRCDIR)/__pycache__
 	rm -f $(BASEDIR)/test/*.pyc
-	docker image rm --force $(APPNAME):dev
+	rm -Rf $(BASEDIR)/test/__pycache__
 
 ################################################################################
 .PHONY: clobber
 
 clobber: clean
+	docker image rm --force $(APPNAME):dev
 	docker image rm --force $(APPNAME):latest
-
