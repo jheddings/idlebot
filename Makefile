@@ -20,6 +20,12 @@ build: test
 	docker image build --tag $(APPNAME):dev $(BASEDIR)
 
 ################################################################################
+.PHONY: rebuild
+
+rebuild: test
+	docker image build --pull --no-cache --tag $(APPNAME):dev $(BASEDIR)
+
+################################################################################
 .PHONY: release
 
 release: build
