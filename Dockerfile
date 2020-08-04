@@ -1,7 +1,4 @@
-FROM python:3.7
-
-RUN pip install --upgrade pip
-RUN pip install pyyaml
+FROM pybase:3.8
 
 COPY src/main.py src/irc.py src/idlerpg.py /usr/local/pybot/
 COPY idlebot.cfg /etc/idlebot.cfg
