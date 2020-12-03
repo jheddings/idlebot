@@ -3,9 +3,7 @@
 import os
 import time
 import random
-
 import logging
-import logging.config
 
 import idlerpg
 
@@ -25,6 +23,7 @@ def parse_args():
 ################################################################################
 def load_config(config_file):
     import yaml
+    import logging.config
 
     try:
         from yaml import CLoader as YamlLoader

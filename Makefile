@@ -59,6 +59,12 @@ rund: release
 	docker container run --rm --detach $(APPNAME):latest
 
 ################################################################################
+.PHONY: runs
+
+runs: release
+	docker container run --restart always --detach $(APPNAME):latest
+
+################################################################################
 .PHONY: clean
 
 clean:
