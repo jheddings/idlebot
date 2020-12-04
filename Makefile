@@ -50,7 +50,7 @@ run:
 .PHONY: runc
 
 runc: build
-	docker container run --interactive --tty $(APPNAME):dev
+	docker container run --rm --interactive --tty $(APPNAME):dev
 
 ################################################################################
 .PHONY: rund
