@@ -6,24 +6,20 @@ import re
 from datetime import datetime, timedelta
 
 from . import irc
-from .config import AppConfig
+from .config import AppConfig, IRCConfig
 
 # for parsing server messages...
 online_status_re = re.compile(r"You are (.+), the level ([0-9]+) (.+)\.")
 next_level_re = re.compile(r"Next level in ([0-9]+) days?, ([0-9]+):([0-9]+):([0-9]+)")
+
+logger = logging.getLogger(__name__)
 
 
 # Events => Handler Function
 #   on_status_update => func(bot)
 class IdleBot:
     def __init__(self, conf: AppConfig):
-        self.logger = logging.getLogger("idlerpg.IdleBot")
-
-        self.irc_server = conf.idlerpg.irc_server
-        self.irc_port = conf.idlerpg.irc_port
-
-        self.irc_nickname = conf.idlerpg.irc_nickname
-        self.irc_fullname = conf.idlerpg.irc_fullname
+        self.logger = logger.getChild("IdleBot")
 
         self.rpg_channel = conf.idlerpg.game_channel
         self.rpg_bot = conf.idlerpg.game_bot
@@ -40,7 +36,13 @@ class IdleBot:
 
         self._pending_status_request = None
 
-        self.client = irc.Client(self.irc_nickname, self.irc_fullname)
+        self._initialize_client(conf.irc)
+
+    def _initialize_client(self, conf: IRCConfig):
+        self.irc_server = conf.server
+        self.irc_port = conf.port
+
+        self.client = irc.Client(conf.nickname, conf.fullname)
         self.client.on_welcome += self._on_welcome
         self.client.on_privmsg += self._on_privmsg
         self.client.on_notice += self._on_notice
@@ -76,6 +78,7 @@ class IdleBot:
 
     def _parse_next_level(self, msg):
         m = next_level_re.search(msg)
+
         if m is None:
             return None
 

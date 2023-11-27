@@ -18,14 +18,16 @@ class PlayerConfig(BaseModel):
     class_: str = Field(alias="class", default="Bot")
 
 
+class IRCConfig(BaseModel):
+    nickname: str
+    fullname: str
+
+    server: str = "moo.slashnet.org"
+    port: int = 6667
+    passwd: Optional[str] = None
+
+
 class IdleRPGConfig(BaseModel):
-    irc_nickname: str
-    irc_fullname: str
-
-    irc_server: str = "moo.slashnet.org"
-    irc_port: int = 6667
-    irc_passwd: Optional[str] = None
-
     game_channel: str = "#G7"
     game_bot: str = "bot"
 
@@ -33,6 +35,7 @@ class IdleRPGConfig(BaseModel):
 class AppConfig(BaseModel):
     """Application configuration for IdleBot."""
 
+    irc: IRCConfig
     idlerpg: IdleRPGConfig
     player: PlayerConfig
     logging: Optional[Dict] = None
