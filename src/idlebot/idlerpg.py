@@ -5,7 +5,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 
-import irc
+from . import irc
 
 # for parsing server messages...
 online_status_re = re.compile(r"You are (.+), the level ([0-9]+) (.+)\.")
