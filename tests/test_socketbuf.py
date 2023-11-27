@@ -6,10 +6,10 @@ import irc
 # keep logging output to a minumim for testing
 logging.basicConfig(level=logging.FATAL)
 
+
 ################################################################################
 class SocketBufferTest(unittest.TestCase):
-
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def test_BufferSizeCheck(self):
         buf = irc.SocketLineBuffer()
 
@@ -17,4 +17,3 @@ class SocketBufferTest(unittest.TestCase):
         buf += txt.encode()
 
         self.assertEqual(len(buf), len(txt))
-

@@ -1,83 +1,81 @@
-## play IdleRPG as a bot
+"""An IRC bot for playing IdleRPG."""
 
-import os
-import time
-import random
 import logging
+import random
+import time
 
-import idlerpg
+import click
 
-################################################################################
-def parse_args():
-    import argparse
+from . import idlerpg, version
+from .config import AppConfig
 
-    argp = argparse.ArgumentParser(description='idlebot: a bot for playing IdleRPG')
+logger = logging.getLogger(__name__)
 
-    argp.add_argument('--config', default='/etc/idlebot.cfg',
-                      help='configuration file (default: /etc/idlebot.cfg)')
 
-    argp.add_argument('params', nargs=argparse.REMAINDER)
+class MainApp:
+    """Context used during main execution."""
 
-    return argp.parse_args()
+    def __init__(self, config: AppConfig):
+        self.logger = logger.getChild("MainApp")
 
-################################################################################
-def load_config(config_file):
-    import yaml
-    import logging.config
+        self.config = config
 
-    try:
-        from yaml import CLoader as YamlLoader
-    except ImportError:
-        from yaml import Loader as YamlLoader
+        self._initialize_bot()
 
-    if not os.path.exists(config_file):
-        logging.warning('!! config file does not exist: %s', config_file)
-        return None
+    def _initialize_bot(self):
+        # fire up the game...
+        self.bot = idlerpg.IdleBot(self.config["idlerpg"])
 
-    with open(config_file, 'r') as fp:
-        conf = yaml.load(fp, Loader=YamlLoader)
+        # register event handlers
+        self.bot.on_status_update += self.on_status_update
 
-    if 'Logging' in conf:
-        logging.config.dictConfig(conf['Logging'])
+    def __call__(self):
+        # let 'er rip
+        self.bot.start()
 
-    logging.debug('!! config file loaded: %s', config_file)
+        # wait for user to quit (Ctrl-C)
+        try:
+            while 1:
+                # use a random sleep value...
+                sleep_sec = random.randint(180, 300)
+                time.sleep(sleep_sec)
 
-    return conf
+                # keep status current
+                self.bot.request_status()
 
-################################################################################
-def on_status_update(bot):
-    if bot.online is True:
-        logging.info('!! IdleBot Online [%s]; next level: %s',
-                     bot.rpg_username, bot.next_level)
-    else:
-        logging.info('!! IdleBot Offline [%s]', bot.rpg_username)
+        except KeyboardInterrupt:
+            print("anceled by user")
 
-################################################################################
-## MAIN ENTRY
+        self.bot.stop()
 
-args = parse_args()
-conf = load_config(args.config)
+    def on_status_update(self, bot: idlerpg.IdleBot):
+        if bot.online is True:
+            self.logger.info(
+                "!! IdleBot Online [%s]; next level: %s",
+                bot.rpg_username,
+                bot.next_level,
+            )
+        else:
+            self.logger.info("!! IdleBot Offline [%s]", bot.rpg_username)
 
-# fire up the game...
-bot = idlerpg.IdleBot(conf['IdleRPG'])
 
-# register event handlers
-bot.on_status_update += on_status_update
+@click.command()
+@click.option(
+    "--config", "-f", default="wxdat.yaml", help="app config file (default: wxdat.yaml)"
+)
+@click.version_option(
+    version=version.__version__,
+    package_name=version.__pkgname__,
+    prog_name=version.__pkgname__,
+)
+def main(config):
+    cfg = AppConfig.load(config)
 
-# let 'er rip
-bot.start()
+    app = MainApp(cfg)
 
-# wait for user to quit (Ctrl-C)
-try:
-    while 1:
-        # use a random sleep value...
-        sleep_sec = random.randint(180, 300)
-        time.sleep(sleep_sec)
+    app()
 
-        # keep status current
-        bot.request_status()
 
-except KeyboardInterrupt:
-    print('anceled by user')
-
-bot.stop()
+### MAIN ENTRY
+if __name__ == "__main__":
+    main()
