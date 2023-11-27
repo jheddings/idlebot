@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "idlebot"
 version = "1.4.0"
-description = "A simple bot for playing IdleRPG on IRC."
+description = "A simple IRC bot for playing IdleRPG."
 authors = ["jheddings <jheddings@gmail.com>"]
 license = "MIT"
 readme = "README.md"
