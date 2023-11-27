@@ -24,7 +24,7 @@ class MainApp:
 
     def _initialize_bot(self):
         # fire up the game...
-        self.bot = idlerpg.IdleBot(self.config["idlerpg"])
+        self.bot = idlerpg.IdleBot(self.config)
 
         # register event handlers
         self.bot.on_status_update += self.on_status_update
@@ -61,7 +61,10 @@ class MainApp:
 
 @click.command()
 @click.option(
-    "--config", "-f", default="wxdat.yaml", help="app config file (default: wxdat.yaml)"
+    "--config",
+    "-f",
+    default="idlebot.yaml",
+    help="app config file (default: idlebot.yaml)",
 )
 @click.version_option(
     version=version.__version__,

@@ -1,4 +1,4 @@
-"""Consistent version information for wxdat."""
+"""Consistent version information for idlebot."""
 
 import importlib.metadata
 import logging
@@ -20,7 +20,7 @@ def extended_version(pkgname):
     try:
         import git
 
-        # the folder containing wxdat source
+        # the folder containing idlebot source
         srcdir = Path(__file__).parent.resolve()
 
         # XXX there is probably a better way to do this, but we don't want to inadvertently
@@ -55,7 +55,7 @@ def extended_version(pkgname):
     return version
 
 
-__pkgname__ = "wxdat"
+__pkgname__ = "idlebot"
 __version__ = extended_version(__pkgname__)
 
 logger.info("%s-%s", __pkgname__, __version__)

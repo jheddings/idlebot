@@ -7,18 +7,34 @@ import os.path
 from typing import Dict, Optional
 
 import yaml
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
+
+
+class PlayerConfig(BaseModel):
+    name: str
+    password: Optional[str] = None
+    class_: str = Field(alias="class", default="Bot")
+
+
+class IdleRPGConfig(BaseModel):
+    irc_nickname: str
+    irc_fullname: str
+
+    irc_server: str = "moo.slashnet.org"
+    irc_port: int = 6667
+    irc_passwd: Optional[str] = None
+
+    game_channel: str = "#G7"
+    game_bot: str = "bot"
 
 
 class AppConfig(BaseModel):
     """Application configuration for IdleBot."""
 
-    interval: int = 60
-    count: int = 3
-    timeout: Optional[int] = None
-
+    idlerpg: IdleRPGConfig
+    player: PlayerConfig
     logging: Optional[Dict] = None
 
     @classmethod

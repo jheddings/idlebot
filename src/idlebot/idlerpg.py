@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timedelta
 
 from . import irc
+from .config import AppConfig
 
 # for parsing server messages...
 online_status_re = re.compile(r"You are (.+), the level ([0-9]+) (.+)\.")
@@ -15,21 +16,21 @@ next_level_re = re.compile(r"Next level in ([0-9]+) days?, ([0-9]+):([0-9]+):([0
 # Events => Handler Function
 #   on_status_update => func(bot)
 class IdleBot:
-    def __init__(self, conf):
+    def __init__(self, conf: AppConfig):
         self.logger = logging.getLogger("idlerpg.IdleBot")
 
-        self.irc_server = conf["irc_server"]
-        self.irc_port = int(conf["irc_port"])
+        self.irc_server = conf.idlerpg.irc_server
+        self.irc_port = conf.idlerpg.irc_port
 
-        self.irc_nickname = conf["irc_nickname"]
-        self.irc_fullname = conf["irc_fullname"]
+        self.irc_nickname = conf.idlerpg.irc_nickname
+        self.irc_fullname = conf.idlerpg.irc_fullname
 
-        self.rpg_channel = conf["game_channel"]
-        self.rpg_bot = conf["game_bot"]
+        self.rpg_channel = conf.idlerpg.game_channel
+        self.rpg_bot = conf.idlerpg.game_bot
 
-        self.rpg_username = conf["player_name"]
-        self.rpg_password = conf["player_passwd"]
-        self.rpg_class = conf["player_class"]
+        self.rpg_username = conf.player.name
+        self.rpg_password = conf.player.password
+        self.rpg_class = conf.player.class_
 
         self.online = False
         self.level = None
@@ -62,7 +63,7 @@ class IdleBot:
         if self.client.connected is not True:
             raise ConnectionError("not connected")
 
-        # TODO how do we detect if the bot never replies?
+        # TODO increment an error metric
         if self._pending_status_request is not None:
             return
 
@@ -164,7 +165,7 @@ class IdleBot:
         if dirty:
             self.on_status_update(self)
 
-    def _on_welcome(self, client, txt):
+    def _on_welcome(self, client: irc.Client, txt):
         self.logger.debug("welcome received... joining IdleRPG")
 
         client.join(self.rpg_channel)
@@ -175,13 +176,13 @@ class IdleBot:
 
         client.msg(self.rpg_bot, login_msg)
 
-    def _on_notice(self, client, origin, recip, txt):
+    def _on_notice(self, client: irc.Client, origin, recip, txt):
         if self._parse_no_account_notice(txt):
             return
         if self._parse_login_notice(txt):
             return
 
-    def _on_privmsg(self, client, origin, recip, txt):
+    def _on_privmsg(self, client: irc.Client, origin, recip, txt):
         if self._parse_online_status(txt):
             return
         if self._parse_offline_status(txt):
