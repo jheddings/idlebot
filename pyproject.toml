@@ -15,7 +15,7 @@ pyyaml = "^6.0.1"
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
 ruff = "^0.1.6"
-git-python = "^1.0.3"
+git-python = "^1.1.1"
 coverage = "^7.3.2"
 pytest = "^7.4.3"
 
