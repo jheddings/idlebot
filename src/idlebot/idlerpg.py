@@ -6,7 +6,7 @@ import re
 from datetime import datetime, timedelta
 
 from . import irc
-from .config import AppConfig, IRCConfig
+from .config import AppConfig, IRCConfig, PlayerConfig
 from .player import Player
 
 # for parsing server messages...
@@ -23,11 +23,10 @@ class IdleBot:
         self.rpg_channel = conf.idlerpg.game_channel
         self.rpg_bot = conf.idlerpg.game_bot
 
-        self.player = Player(conf.player.name, conf.player.password, conf.player.class_)
-
         self._pending_status_request = None
 
         self._initialize_client(conf.irc)
+        self._initialize_player(conf.player)
 
     def _initialize_client(self, conf: IRCConfig):
         self.irc_server = conf.server
@@ -37,6 +36,9 @@ class IdleBot:
         self.client.on_welcome += self._on_welcome
         self.client.on_privmsg += self._on_privmsg
         self.client.on_notice += self._on_notice
+
+    def _initialize_player(self, conf: PlayerConfig):
+        self.player = Player(conf.name, conf.password, conf.class_)
 
     def start(self):
         self.client.connect(self.irc_server, port=self.irc_port)
