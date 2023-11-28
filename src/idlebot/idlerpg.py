@@ -71,10 +71,16 @@ class IdleBot:
 
         # request our current level from the game bot
         if self.client.connected is True:
-            self.client.msg("bot", "WHOAMI")
+            self.client.msg(self.rpg_bot, "WHOAMI")
             self._pending_status_request = datetime.now()
         else:
             self.online = False
+
+    def _register_player(self):
+        self.client.msg(
+            self.rpg_bot,
+            f"REGISTER {self.rpg_username} {self.rpg_password} {self.rpg_class}",
+        )
 
     def _parse_next_level(self, msg):
         m = next_level_re.search(msg)
@@ -90,27 +96,19 @@ class IdleBot:
         return timedelta(days, seconds, 0, 0, minutes, hours)
 
     def _parse_no_account_notice(self, msg):
-        if not msg.startswith("Sorry, no such account name."):
-            return False
+        if msg.startswith("Sorry, no such account name."):
+            self._register_player()
+            return True
 
-        register_msg = "REGISTER"
-        register_msg += " " + self.rpg_username
-        register_msg += " " + self.rpg_password
-        register_msg += " " + self.rpg_class
-
-        self.client.msg("bot", register_msg)
-
-        return True
+        return False
 
     def _parse_login_notice(self, msg):
-        if not msg.startswith("Logon successful."):
-            return False
+        if msg.startswith("Logon successful."):
+            nxtlvl = self._parse_next_level(msg)
+            self._update_status(True, False, nxtlvl)
+            return True
 
-        nxtlvl = self._parse_next_level(msg)
-
-        self._update_status(True, False, nxtlvl)
-
-        return True
+        return False
 
     def _parse_online_status(self, msg):
         m = online_status_re.match(msg)
