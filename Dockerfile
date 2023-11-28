@@ -1,6 +1,13 @@
-FROM pybase:3.8
+FROM python:3.12
 
-COPY src/main.py src/irc.py src/idlerpg.py /usr/local/pybot/
-COPY idlebot.cfg /etc/idlebot.cfg
+COPY etc/example_config.yaml /etc/idlebot.yaml
 
-CMD ["python", "/usr/local/pybot/main.py", "--config=/etc/idlebot.cfg"]
+COPY src poetry.lock pyproject.toml README.md /tmp/idlebot/
+RUN pip3 install /tmp/idlebot/ && rm -Rf /tmp/idlebot
+
+# commands must be presented as an array, otherwise it will be launched
+# using a shell, which causes problems handling signals for shutdown (#15)
+ENTRYPOINT ["python3", "-m", "idlebot"]
+
+# allow local callers to change the config file
+CMD ["--config=/etc/idlebot.yaml"]

@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "idlebot"
+version = "1.4.0"
+description = "A simple IRC bot for playing IdleRPG."
+authors = ["jheddings <jheddings@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pydantic = "^2.5.2"
+click = "^8.1.7"
+pyyaml = "^6.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.5.0"
+ruff = "^0.1.6"
+git-python = "^1.0.3"
+coverage = "^7.3.2"
+pytest = "^7.4.3"
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    "I",   # isort
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "C",   # flake8-comprehensions
+    "B",   # flake8-bugbear
+    "G",   # flake8-logging-format
+    "RET", # flake8-return
+    "ERA", # eradicate
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501", # line-too-long
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.isort]
+known-first-party = ["idlebot"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

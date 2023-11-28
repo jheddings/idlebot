@@ -3,79 +3,90 @@
 BASEDIR ?= $(PWD)
 SRCDIR ?= $(BASEDIR)/src
 
-APPNAME ?= idlebot
-APPVER ?= 1.4
+APPNAME ?= $(shell grep -m1 '^name' "$(BASEDIR)/pyproject.toml" | sed -e 's/name.*"\(.*\)"/\1/')
+APPVER ?= $(shell grep -m1 '^version' "$(BASEDIR)/pyproject.toml" | sed -e 's/version.*"\(.*\)"/\1/')
 
-PY := PYTHONPATH="$(SRCDIR)" python3
+WITH_VENV := poetry run
 
-################################################################################
+
 .PHONY: all
+all: venv preflight build
 
-all: build
 
-################################################################################
+.PHONY: venv
+venv:
+	poetry install --sync --no-interaction
+	$(WITH_VENV) pre-commit install --install-hooks --overwrite
+
+
+poetry.lock: venv
+	poetry lock --no-update --no-interaction
+
+
 .PHONY: build
+build: preflight
+	docker image build --tag "$(APPNAME):dev" "$(BASEDIR)"
 
-build: test
-	docker image build --tag $(APPNAME):dev $(BASEDIR)
 
-################################################################################
-.PHONY: rebuild
-
-rebuild: test
-	docker image build --pull --no-cache --tag $(APPNAME):dev $(BASEDIR)
-
-################################################################################
 .PHONY: release
+release:
+	git tag "v$(APPVER)" main
+	git push origin "v$(APPVER)"
 
-release: build
-	docker image tag $(APPNAME):dev $(APPNAME):latest
-	docker image tag $(APPNAME):latest $(APPNAME):$(APPVER)
 
-################################################################################
-.PHONY: test
-
-# TODO use a container for tests...
-
-test:
-	$(PY) -m unittest discover -v -s $(BASEDIR)/test
-
-################################################################################
 .PHONY: run
+run: venv
+	$(WITH_VENV) python3 -m idlebot --config $(BASEDIR)/local.yaml
 
-run:
-	$(PY) $(SRCDIR)/main.py --config=$(BASEDIR)/idlebot.cfg
 
-################################################################################
 .PHONY: runc
-
 runc: build
-	docker container run --rm --interactive --tty $(APPNAME):dev
+	docker container run --rm --tty --volume "$(BASEDIR):/opt/idlebot" \
+		"$(APPNAME):dev" --config=/opt/idlebot/local.yaml
 
-################################################################################
-.PHONY: rund
 
-rund: release
-	docker container run --rm --detach $(APPNAME):latest
+.PHONY: static-checks
+static-checks: venv
+	$(WITH_VENV) pre-commit run --all-files --verbose
 
-################################################################################
-.PHONY: runs
 
-runs: release
-	docker container run --restart always --detach $(APPNAME):latest
+.PHONY: unit-tests
+unit-tests: venv
+	$(WITH_VENV) coverage run "--source=$(SRCDIR)" -m pytest "$(BASEDIR)/tests"
 
-################################################################################
+
+.PHONY: coverage-report
+coverage-report: venv unit-tests
+	$(WITH_VENV) coverage report
+
+
+.PHONY: coverage-html
+coverage-html: venv unit-tests
+	$(WITH_VENV) coverage html
+
+
+.PHONY: coverage
+coverage: coverage-report coverage-html
+
+
+.PHONY: preflight
+preflight: static-checks unit-tests coverage-report
+
+
 .PHONY: clean
-
 clean:
-	rm -f $(SRCDIR)/*.pyc
-	rm -Rf $(SRCDIR)/__pycache__
-	rm -f $(BASEDIR)/test/*.pyc
-	rm -Rf $(BASEDIR)/test/__pycache__
+	rm -f "$(BASEDIR)/.coverage"
+	rm -Rf "$(BASEDIR)/.pytest_cache"
+	find "$(BASEDIR)" -name "*.pyc" -print | xargs rm -f
+	find "$(BASEDIR)" -name '__pycache__' -print | xargs rm -Rf
+	docker image rm "$(APPNAME):dev" 2>/dev/null || true
 
-################################################################################
+
 .PHONY: clobber
-
 clobber: clean
-	docker image rm --force $(APPNAME):dev
-	docker image rm --force $(APPNAME):latest
+	$(WITH_VENV) pre-commit uninstall
+	rm -Rf "$(BASEDIR)/htmlcov"
+	rm -Rf "$(BASEDIR)/dist"
+	poetry env remove --all --no-interaction
+	docker image rm "$(APPNAME):latest" 2>/dev/null || true
+	docker image rm "$(APPNAME):$(APPVER)" 2>/dev/null || true

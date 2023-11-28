@@ -1,26 +1,31 @@
 # idlebot configuration file
 
-#-------------------------------------------------------------------------------
+# configure irc parameters
+irc:
+  server: moo.slashnet.org
+  port: 6667
+  passwd: password
+
+  nickname: idlebot
+  fullname: IdleRPG Bot
+
+
 # configure game parameters
-IdleRPG:
-  irc_server: moo.slashnet.org
-  irc_port: 6667
-  irc_passwd: password
-
-  irc_nickname: idlebot
-  irc_fullname: IdleRPG Bot
-
+idlerpg:
   game_channel: '#G7'
   game_bot: bot
 
-  player_name: idlebot
-  player_passwd: TTTTTTTT
-  player_class: Python Bot
 
-#-------------------------------------------------------------------------------
+# configure player info
+player:
+  name: idlebot
+  password: TTTTTTTT
+  class: Python Bot
+
+
 # setup logging system -- or remove this section to disable logging
 # this uses the standard dict config for the Python logging framework
-Logging:
+logging:
   version: 1
 
   formatters:
