@@ -1,4 +1,4 @@
-"""Metrics provider for idlebot."""
+"""Metrics wrapper for idlebot."""
 
 from prometheus_client import Counter, Gauge
 
@@ -21,10 +21,10 @@ NEXT_LEVEL = Counter(
 )
 
 
-class AppMetrics:
-    def __init__(self, bot):
-        self._bot = bot
+class PlayerMetrics:
+    def __init__(self, player):
+        self._player = player
 
-        self.status = PLAYER_STATUS.labels(player=bot.rpg_username)
-        self.current_level = PLAYER_LEVEL.labels(player=bot.rpg_username)
-        self.next_level = PLAYER_LEVEL.labels(player=bot.rpg_username)
+        self.status = PLAYER_STATUS.labels(player=player.name)
+        self.current_level = PLAYER_LEVEL.labels(player=player.name)
+        self.next_level = PLAYER_LEVEL.labels(player=player.name)

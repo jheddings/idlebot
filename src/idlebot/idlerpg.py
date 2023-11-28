@@ -5,10 +5,9 @@ import logging
 import re
 from datetime import datetime, timedelta
 
-from idlebot.metrics import AppMetrics
-
 from . import irc
 from .config import AppConfig, IRCConfig
+from .player import Player
 
 # for parsing server messages...
 online_status_re = re.compile(r"You are (.+), the level ([0-9]+) (.+)\.")
@@ -24,19 +23,11 @@ class IdleBot:
         self.rpg_channel = conf.idlerpg.game_channel
         self.rpg_bot = conf.idlerpg.game_bot
 
-        self.rpg_username = conf.player.name
-        self.rpg_password = conf.player.password
-        self.rpg_class = conf.player.class_
-
-        self.online = False
-        self.level = None
-        self.next_level = None
+        self.player = Player(conf.player.name, conf.player.password, conf.player.class_)
 
         self._pending_status_request = None
 
         self._initialize_client(conf.irc)
-
-        self.metrics = AppMetrics(self)
 
     def _initialize_client(self, conf: IRCConfig):
         self.irc_server = conf.server
@@ -76,11 +67,22 @@ class IdleBot:
         else:
             self.online = False
 
-    def _register_player(self):
-        self.client.msg(
-            self.rpg_bot,
-            f"REGISTER {self.rpg_username} {self.rpg_password} {self.rpg_class}",
+    def _register_player(self, player: Player):
+        self.logger.info("registering new player: %s", player.name)
+        register = f"REGISTER {player.name} {player.password} {player.character}"
+        self.client.msg(self.rpg_bot, register)
+
+    def _join_rpg_game(self, client: irc.Client):
+        self.logger.info(
+            "joining IdleRPG: %s [%s]",
+            self.rpg_channel,
+            self.player.name,
         )
+
+        login_msg = f"LOGIN {self.player.name} {self.player.password}"
+
+        client.join(self.rpg_channel)
+        client.msg(self.rpg_bot, login_msg)
 
     def _parse_next_level(self, msg):
         m = next_level_re.search(msg)
@@ -97,7 +99,7 @@ class IdleBot:
 
     def _parse_no_account_notice(self, msg):
         if msg.startswith("Sorry, no such account name."):
-            self._register_player()
+            self._register_player(self.player)
             return True
 
         return False
@@ -118,7 +120,7 @@ class IdleBot:
         msg_user = m.group(1)
 
         # the message parsed, but it is not about us...
-        if msg_user != self.rpg_username:
+        if msg_user != self.player.name:
             return True
 
         level = int(m.group(2))
@@ -138,35 +140,25 @@ class IdleBot:
         return True
 
     def _update_status(self, online=False, level=None, nxtlvl=None):
-        self.online = online
-        self.metrics.status.set(online)
+        self.player.online = online
 
         if level is not None:
-            self.level = level
-            self.metrics.current_level.set(level)
+            self.player.level = level
 
         if nxtlvl is not None:
-            self.next_level = nxtlvl
-            self.metrics.next_level.set(nxtlvl.total_seconds())
+            self.player.next_level = nxtlvl
 
         self.logger.debug(
             "status [%s] -- online:%s level:%s next:%s",
-            self.rpg_username,
-            self.online,
-            self.level,
-            self.next_level,
+            self.player.name,
+            self.player.online,
+            self.player.level,
+            self.player.next_level,
         )
 
     def _on_welcome(self, client: irc.Client, txt):
-        self.logger.debug("welcome received... joining IdleRPG")
-
-        client.join(self.rpg_channel)
-
-        login_msg = "LOGIN"
-        login_msg += " " + self.rpg_username
-        login_msg += " " + self.rpg_password
-
-        client.msg(self.rpg_bot, login_msg)
+        self.logger.debug("welcome received")
+        self._join_rpg_game(client)
 
     def _on_notice(self, client: irc.Client, origin, recip, txt):
         if self._parse_no_account_notice(txt):
