@@ -139,20 +139,6 @@ testing = ["covdefaults (>=2.3)", "coverage (>=7.3.2)", "diff-cover (>=8)", "pyt
 typing = ["typing-extensions (>=4.8)"]
 
 [[package]]
-name = "git-python"
-version = "1.0.3"
-description = "combination and simplification of some useful git commands"
-optional = false
-python-versions = "*"
-files = [
-    {file = "git-python-1.0.3.zip", hash = "sha256:a7f51d07c7a0b0a15cb4dfa78601196dd20624211153d07c092b811edb6e86fb"},
-    {file = "git_python-1.0.3-py2.py3-none-any.whl", hash = "sha256:8820ce93786cd11a76d44c7153708588e8056213e4c512406ea3732871aa9ad6"},
-]
-
-[package.dependencies]
-gitpython = "*"
-
-[[package]]
 name = "gitdb"
 version = "4.0.11"
 description = "Git Object Database"
@@ -573,4 +559,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "03298331b3dc4db5f53da8156ff3cb5036e9913d47608046fba32c0fedaadbdf"
+content-hash = "bf75d3c8318fefedbe9614c58fb52a6439e0ceec7e7d71f648fc3a311cfadf15"
