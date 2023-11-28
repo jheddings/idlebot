@@ -23,18 +23,9 @@ poetry.lock: venv
 	poetry lock --no-update --no-interaction
 
 
-.PHONY: build-dist
-build-dist: preflight
-	poetry build --no-interaction
-
-
-.PHONY: build-image
-build-image: preflight
-	docker image build --tag "$(APPNAME):dev" "$(BASEDIR)"
-
-
 .PHONY: build
-build: build-dist build-image
+build: preflight
+	docker image build --tag "$(APPNAME):dev" "$(BASEDIR)"
 
 
 .PHONY: release
@@ -49,7 +40,7 @@ run: venv
 
 
 .PHONY: runc
-runc: build-image
+runc: build
 	docker container run --rm --tty --volume "$(BASEDIR):/opt/idlebot" \
 		"$(APPNAME):dev" --config=/opt/idlebot/local.yaml
 
