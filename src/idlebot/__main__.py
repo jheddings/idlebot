@@ -5,6 +5,7 @@ import random
 import time
 
 import click
+from prometheus_client import start_http_server
 
 from . import idlerpg, version
 from .config import AppConfig
@@ -21,13 +22,18 @@ class MainApp:
         self.config = config
 
         self._initialize_bot()
+        self._initialize_metrics(config.metrics)
 
     def _initialize_bot(self):
         # fire up the game...
         self.bot = idlerpg.IdleBot(self.config)
 
-        # register event handlers
-        self.bot.on_status_update += self.on_status_update
+    def _initialize_metrics(self, port=None):
+        if port is None:
+            self.logger.debug("metrics server disabled by config")
+        else:
+            self.logger.info("Initializing app metrics: %d", port)
+            start_http_server(port)
 
     def __call__(self):
         # let 'er rip
@@ -47,16 +53,6 @@ class MainApp:
             print("anceled by user")
 
         self.bot.stop()
-
-    def on_status_update(self, bot: idlerpg.IdleBot):
-        if bot.online is True:
-            self.logger.info(
-                "!! IdleBot Online [%s]; next level: %s",
-                bot.rpg_username,
-                bot.next_level,
-            )
-        else:
-            self.logger.info("!! IdleBot Offline [%s]", bot.rpg_username)
 
 
 @click.command()

@@ -1,5 +1,8 @@
 # idlebot configuration file
 
+# to enable prometheus metrics, uncomment the following line
+# metrics: 9067
+
 # configure irc parameters
 irc:
   server: moo.slashnet.org

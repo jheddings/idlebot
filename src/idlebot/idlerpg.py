@@ -5,6 +5,8 @@ import logging
 import re
 from datetime import datetime, timedelta
 
+from idlebot.metrics import AppMetrics
+
 from . import irc
 from .config import AppConfig, IRCConfig
 
@@ -15,8 +17,6 @@ next_level_re = re.compile(r"Next level in ([0-9]+) days?, ([0-9]+):([0-9]+):([0
 logger = logging.getLogger(__name__)
 
 
-# Events => Handler Function
-#   on_status_update => func(bot)
 class IdleBot:
     def __init__(self, conf: AppConfig):
         self.logger = logger.getChild("IdleBot")
@@ -32,11 +32,11 @@ class IdleBot:
         self.level = None
         self.next_level = None
 
-        self.on_status_update = irc.Event()
-
         self._pending_status_request = None
 
         self._initialize_client(conf.irc)
+
+        self.metrics = AppMetrics(self)
 
     def _initialize_client(self, conf: IRCConfig):
         self.irc_server = conf.server
@@ -139,22 +139,18 @@ class IdleBot:
 
         return True
 
-    def _update_status(self, online=None, level=False, nxtlvl=False):
-        dirty = False
+    def _update_status(self, online=False, level=None, nxtlvl=None):
+        self.online = online
+        self.metrics.status.set(online)
 
-        if online is not None and self.online != online:
-            self.online = online
-            dirty = True
-
-        if level is not False and self.level != level:
+        if level is not None:
             self.level = level
-            dirty = True
+            self.metrics.current_level.set(level)
 
-        if nxtlvl is not False and self.next_level != nxtlvl:
+        if nxtlvl is not None:
             self.next_level = nxtlvl
-            dirty = True
+            self.metrics.next_level.set(nxtlvl.total_seconds())
 
-        # TODO improve debug logging for status changes
         self.logger.debug(
             "status [%s] -- online:%s level:%s next:%s",
             self.rpg_username,
@@ -162,11 +158,6 @@ class IdleBot:
             self.level,
             self.next_level,
         )
-
-        # XXX do we need to be worried about a dirty flag since the next_level
-        # status will most often change on any of the regular updates?
-        if dirty:
-            self.on_status_update(self)
 
     def _on_welcome(self, client: irc.Client, txt):
         self.logger.debug("welcome received... joining IdleRPG")

@@ -38,6 +38,7 @@ class AppConfig(BaseModel):
     irc: IRCConfig
     idlerpg: IdleRPGConfig
     player: PlayerConfig
+    metrics: Optional[int] = None
     logging: Optional[Dict] = None
 
     @classmethod
