@@ -1,15 +1,13 @@
 import logging
 import unittest
 
-import irc
+from idlebot import irc
 
 # keep logging output to a minumim for testing
 logging.basicConfig(level=logging.FATAL)
 
 
-################################################################################
 class SocketBufferTest(unittest.TestCase):
-    # ---------------------------------------------------------------------------
     def test_BufferSizeCheck(self):
         buf = irc.SocketLineBuffer()
 

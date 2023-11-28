@@ -23,10 +23,10 @@ class LineBufferTest(unittest.TestCase):
     def test_VerifyLipsum(self):
         buf = irc.LineBuffer()
 
-        with open("test/lipsum.txt") as fp:
+        with open("tests/lipsum.txt") as fp:
             buf.append(fp.read())
 
-        with open("test/lipsum.txt") as fp:
+        with open("tests/lipsum.txt") as fp:
             for line in fp:
                 txtline = line.strip()
                 bufline = next(buf)
