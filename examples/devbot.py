@@ -1,4 +1,4 @@
-## very basic IRC bot for testing our IRC client
+"""Basic IRC bot for testing our IRC client."""
 
 import datetime
 import logging
@@ -13,18 +13,15 @@ logging.basicConfig(
 logger = logging.getLogger("PyBot")
 
 
-# ---------------------------------------------------------------------------
 def on_welcome(client, msg):
     logger.info("Connection registered -- %s", msg)
     client.join("#pybot")
 
 
-# ---------------------------------------------------------------------------
 def on_connect(client):
     logger.info("Connected to server")
 
 
-# ---------------------------------------------------------------------------
 def on_privmsg(client, sender, recip, msg):
     logger.info("Message Received: %s => %s -- %s", sender, recip, msg)
 
@@ -34,13 +31,11 @@ def on_privmsg(client, sender, recip, msg):
         client.msg(sender, "echo -- %s" % msg)
 
 
-# ---------------------------------------------------------------------------
 def on_join(client, channel):
     logger.info("Client joined channel: %s", channel)
     client.msg(channel, "Hello World - %s" % datetime.datetime.now())
 
 
-# ---------------------------------------------------------------------------
 def on_part(client, channel, msg):
     if msg is None:
         logger.info("Client left channel: %s", channel)
@@ -48,7 +43,6 @@ def on_part(client, channel, msg):
         logger.info("Client left channel: %s -- %s", channel, msg)
 
 
-# ---------------------------------------------------------------------------
 def on_quit(client, msg):
     if msg is None:
         logger.info("Disconnected from server")
@@ -56,7 +50,6 @@ def on_quit(client, msg):
         logger.info("Disconnected from server -- %s", msg)
 
 
-# ---------------------------------------------------------------------------
 ## configure the client and event handlers
 client = irc.Client("pybot", "PyBot")
 
@@ -67,7 +60,6 @@ client.on_part += on_part
 client.on_privmsg += on_privmsg
 client.on_quit += on_quit
 
-# ---------------------------------------------------------------------------
 ## connect to the IRC server
 client.connect("localhost")
 
