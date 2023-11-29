@@ -122,7 +122,7 @@ class LineBuffer:
 # works much like a LineBuffer, but assumes incoming data is encoded
 class SocketLineBuffer(LineBuffer):
     def __init__(self):
-        super().__init__(self)
+        super().__init__()
         self.logger = logger.getChild("SocketLineBuffer")
 
     def __iadd__(self, data):
