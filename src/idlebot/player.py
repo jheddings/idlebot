@@ -4,6 +4,8 @@ from datetime import timedelta
 
 from .metrics import PlayerMetrics
 
+PLAYER_XML_URL = "http://idlerpg.net/xml.php?player={player}"
+
 
 class Player:
     def __init__(self, name, password, class_):
