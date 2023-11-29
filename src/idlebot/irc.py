@@ -12,6 +12,8 @@ import socket
 import sys
 import threading
 
+logger = logging.getLogger(__name__)
+
 # TODO need more error handling for events and daemon execution
 
 
@@ -35,7 +37,7 @@ class Event(list):
 
 class LineBuffer:
     def __init__(self):
-        self.logger = logging.getLogger("irc.LineBuffer")
+        self.logger = logger.getChild("LineBuffer")
 
         self._buffer = None
         self._lock = threading.Lock()
@@ -120,8 +122,8 @@ class LineBuffer:
 # works much like a LineBuffer, but assumes incoming data is encoded
 class SocketLineBuffer(LineBuffer):
     def __init__(self):
-        LineBuffer.__init__(self)
-        self.logger = logging.getLogger("irc.SocketLineBuffer")
+        super().__init__(self)
+        self.logger = logger.getChild("SocketLineBuffer")
 
     def __iadd__(self, data):
         if data is None:
@@ -166,7 +168,7 @@ class Client:
     #   name: the full name used by this client
     #   daemon: start a daemon to manage server messages
     def __init__(self, nick, name, daemon=True):
-        self.logger = logging.getLogger("irc.Client")
+        self.logger = logger.getChild("Client")
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.nickname = nick
         self.fullname = name
@@ -395,9 +397,6 @@ class Client:
             more = self._recv()
 
         self.logger.debug(": end comm loop")
-
-
-# utility methods for parsing IRC messages
 
 
 # parse regular server messages into: origin, name, payload
