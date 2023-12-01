@@ -150,7 +150,7 @@ class IdleBot:
         if nxtlvl is not None:
             self.player.next_level = nxtlvl
 
-        self.logger.debug(
+        self.logger.info(
             "status [%s] -- online:%s level:%s next:%s",
             self.player.name,
             self.player.online,
