@@ -27,4 +27,4 @@ class PlayerMetrics:
 
         self.status = PLAYER_STATUS.labels(player=player.name)
         self.current_level = PLAYER_LEVEL.labels(player=player.name)
-        self.next_level = PLAYER_LEVEL.labels(player=player.name)
+        self.next_level = NEXT_LEVEL.labels(player=player.name)
