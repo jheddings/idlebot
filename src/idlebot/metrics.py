@@ -1,6 +1,6 @@
 """Metrics wrapper for idlebot."""
 
-from prometheus_client import Counter, Gauge
+from prometheus_client import Gauge
 
 PLAYER_STATUS = Gauge(
     "idlerpg_status",
@@ -14,7 +14,7 @@ PLAYER_LEVEL = Gauge(
     labelnames=["player"],
 )
 
-NEXT_LEVEL = Counter(
+NEXT_LEVEL = Gauge(
     "idlerpg_next_level",
     "Time until player reaches the next level (in seconds).",
     labelnames=["player"],
