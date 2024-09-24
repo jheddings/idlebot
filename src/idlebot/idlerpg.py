@@ -147,15 +147,11 @@ class IdleBot:
         if level is not None:
             self.player.level = level
 
-        if nxtlvl is not None:
-            self.player.next_level = nxtlvl
-
         self.logger.info(
             "status [%s] -- online:%s level:%s next:%s",
-            self.player.name,
+            self.player.username,
             self.player.online,
             self.player.level,
-            self.player.next_level,
         )
 
     def _on_welcome(self, client: irc.Client, txt):
