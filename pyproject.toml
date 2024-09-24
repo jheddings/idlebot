@@ -12,6 +12,7 @@ pydantic = "^2.9.2"
 click = "^8.1.7"
 pyyaml = "^6.0.2"
 prometheus-client = "^0.21.0"
+requests = "^2.32.3"
 pydantic-xml = "^2.12.1"
 
 [tool.poetry.group.dev.dependencies]
