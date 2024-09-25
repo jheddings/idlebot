@@ -1,8 +1,8 @@
 """Player class for IdleBot."""
 
-
-from datetime import timedelta
+import xml.etree.ElementTree as ET
 from enum import Enum
+from typing import Optional
 
 import requests
 from pydantic_xml import BaseXmlModel, element
@@ -14,16 +14,16 @@ class Alignment(str, Enum):
     EVIL = "e"
 
 
-class PlayerInfo(BaseXmlModel, tag="player"):
+class PlayerInfo(BaseXmlModel, tag="player", search_mode="unordered"):
     username: str = element()
     character: str = element(tag="class")
     alignment: Alignment = element(default=Alignment.NEUTRAL)
 
-    level: int = element()
-    ttl: timedelta = element()
-
-    is_admin: bool = element(default=False, tag="isadmin")
+    is_admin: bool = element(default=True, tag="isadmin")
     online: bool = element(default=False)
+
+    level: Optional[int] = element(default=None)
+    ttl: Optional[int] = element(default=None)
 
     @property
     def xml(self):
@@ -33,11 +33,9 @@ class PlayerInfo(BaseXmlModel, tag="player"):
     def profile(self):
         return f"http://www.idlerpg.net/playerview.php?player={self.username}"
 
-    def update(self):
-        pass
-
     @classmethod
     def get(cls, username: str):
         xml = f"http://www.idlerpg.net/xml.php?player={username}"
         resp = requests.get(xml)
-        return cls.from_xml(resp.content)
+        tree = ET.fromstring(resp.content)
+        return cls.from_xml_tree(tree)

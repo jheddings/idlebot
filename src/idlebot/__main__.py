@@ -9,6 +9,7 @@ from prometheus_client import start_http_server
 
 from . import idlerpg, version
 from .config import AppConfig
+from .player import PlayerInfo
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class MainApp:
         self.bot.stop()
 
 
-@click.command()
+@click.group()
 @click.option(
     "--config",
     "-f",
@@ -67,14 +68,29 @@ class MainApp:
     package_name=version.__pkgname__,
     prog_name=version.__pkgname__,
 )
-def main(config):
+@click.pass_context
+def main(ctx, config):
     cfg = AppConfig.load(config)
+    ctx.obj = MainApp(cfg)
 
-    app = MainApp(cfg)
 
+@main.command("run")
+@click.pass_obj
+def do_run(app: MainApp):
     app()
 
 
-### MAIN ENTRY
+@main.command("status")
+@click.pass_obj
+def do_status(app: MainApp):
+    info = PlayerInfo.get(app.config.player.name)
+
+    click.echo(
+        f"You are {info.username} [{info.alignment}], the level {info.level} {info.character}"
+    )
+    click.echo(f"Next level in {info.ttl} seconds")
+
+
+## MAIN ENTRY
 if __name__ == "__main__":
     main()
