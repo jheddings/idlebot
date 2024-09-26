@@ -1,8 +1,7 @@
 """An IRC bot for playing IdleRPG."""
 
 import logging
-import random
-import time
+import signal
 
 import click
 from prometheus_client import start_http_server
@@ -26,7 +25,6 @@ class MainApp:
         self._initialize_metrics(config.metrics)
 
     def _initialize_bot(self):
-        # fire up the game...
         self.bot = idlerpg.IdleBot(self.config)
 
     def _initialize_metrics(self, port=None):
@@ -37,21 +35,12 @@ class MainApp:
             start_http_server(port)
 
     def __call__(self):
-        # let 'er rip
         self.bot.start()
 
-        # wait for user to quit (Ctrl-C)
         try:
-            while 1:
-                # use a random sleep value...
-                sleep_sec = random.randint(180, 300)
-                time.sleep(sleep_sec)
-
-                # keep status current
-                self.bot.request_status()
-
+            signal.pause()
         except KeyboardInterrupt:
-            print("anceled by user")
+            self.logger.debug("canceled by user")
 
         self.bot.stop()
 
