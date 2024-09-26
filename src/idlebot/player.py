@@ -1,10 +1,12 @@
 """Player class for IdleBot."""
 
 import xml.etree.ElementTree as ET
+from datetime import timedelta
 from enum import Enum
 from typing import Optional
 
 import requests
+from pydantic import field_validator
 from pydantic_xml import BaseXmlModel, element
 
 
@@ -23,7 +25,14 @@ class PlayerInfo(BaseXmlModel, tag="player", search_mode="unordered"):
     online: bool = element(default=False)
 
     level: Optional[int] = element(default=None)
-    ttl: Optional[int] = element(default=None)
+    ttl: Optional[timedelta] = element(default=None)
+
+    @field_validator("ttl", mode="before")
+    @classmethod
+    def ttl_as_int(cls, raw: str) -> int:
+        # the XML fields all come as strings...  pydantic will try to convert them
+        # as timedelta objects, but the ttl field is really just an integer
+        return int(raw)
 
     @property
     def xml(self):
