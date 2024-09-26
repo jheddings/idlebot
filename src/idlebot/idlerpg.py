@@ -29,9 +29,8 @@ class IdleBot:
 
         self.client = irc.Client(conf.nickname, conf.fullname)
         self.client.on_welcome += self._on_welcome
-        self.client.on_privmsg += self._on_privmsg
-        self.client.on_notice += self._on_notice
         self.client.on_ping += self._on_ping
+        self.client.on_notice += self._on_notice
 
     def start(self):
         self.client.connect(self.irc_server, port=self.irc_port)
@@ -85,9 +84,6 @@ class IdleBot:
 
         elif txt.startswith("Logon successful."):
             self._refresh_player_status()
-
-    def _on_privmsg(self, client: irc.Client, origin, recip, txt):
-        self.logger.debug("privmsg [%s]: %s", recip, txt)
 
     def _on_ping(self, client, txt):
         self._refresh_player_status()
