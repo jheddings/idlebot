@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.FATAL)
 
 
 class PlayerInfoTest(unittest.TestCase):
-    def test_parse_player_info(self):
+    def test_player_xml(self):
         with open("tests/player.xml") as fp:
             text = fp.read()
 
