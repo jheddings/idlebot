@@ -75,7 +75,7 @@ def do_status(app: MainApp):
     info = PlayerInfo.get(app.config.player.name)
 
     click.echo(f"You are {info.username}, the level {info.level} {info.character}")
-    click.echo(f"Next level: {info.ttl} [{'online' if info.online else 'offline'}]")
+    click.echo(f"Next level: {info.ttl} [{'online' if info.is_online else 'offline'}]")
 
 
 ## MAIN ENTRY

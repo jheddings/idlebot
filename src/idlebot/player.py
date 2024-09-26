@@ -22,7 +22,7 @@ class PlayerInfo(BaseXmlModel, tag="player", search_mode="unordered"):
     alignment: Alignment = element(default=Alignment.NEUTRAL)
 
     is_admin: bool = element(default=True, tag="isadmin")
-    online: bool = element(default=False)
+    is_online: bool = element(default=False, tag="online")
 
     level: Optional[int] = element(default=None)
     ttl: Optional[timedelta] = element(default=None)

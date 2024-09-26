@@ -72,7 +72,7 @@ class IdleBot:
             player.level,
             player.character,
             player.ttl,
-            "online" if player.online else "offline",
+            "online" if player.is_online else "offline",
         )
 
     def _on_welcome(self, client: irc.Client, txt):
