@@ -36,7 +36,7 @@ release:
 
 .PHONY: run
 run: venv
-	$(WITH_VENV) python3 -m idlebot --config $(BASEDIR)/local.yaml
+	$(WITH_VENV) python3 -m idlebot --config $(BASEDIR)/local.yaml run
 
 
 .PHONY: runc

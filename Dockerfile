@@ -10,4 +10,4 @@ RUN pip3 install /tmp/idlebot/ && rm -Rf /tmp/idlebot
 ENTRYPOINT ["python3", "-m", "idlebot"]
 
 # allow local callers to change the config file
-CMD ["--config=/etc/idlebot.yaml"]
+CMD ["--config=/etc/idlebot.yaml", "run"]
