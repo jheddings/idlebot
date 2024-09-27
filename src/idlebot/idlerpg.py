@@ -61,7 +61,7 @@ class IdleBot:
         client.join(self.rpg_channel)
         client.msg(self.rpg_bot, login_msg)
 
-    def _refresh_player_status(self):
+    def _log_player_status(self):
         # NOTE this status is often behind the actual game
         player = PlayerInfo.get(self._config.player.name)
 
@@ -83,7 +83,7 @@ class IdleBot:
             self._register_player(self._config.player)
 
         elif txt.startswith("Logon successful."):
-            self._refresh_player_status()
+            self._log_player_status()
 
     def _on_ping(self, client, txt):
-        self._refresh_player_status()
+        self._log_player_status()
