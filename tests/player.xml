@@ -1,0 +1,36 @@
+<player>
+    <username>test_subject</username>
+    <isadmin>0</isadmin>
+    <level>13</level>
+    <class>Human Trial</class>
+    <ttl>3189</ttl>
+    <userhost>test_subject!~test_subj@2BE5215F.28BBCD42.54BC4D0F.IP</userhost>
+    <online>0</online>
+    <totalidled>27810</totalidled>
+    <xpos>55</xpos>
+    <ypos>464</ypos>
+    <alignment>n</alignment>
+    <penalties>
+        <mesg>0</mesg>
+        <nick>0</nick>
+        <part>0</part>
+        <kick>0</kick>
+        <quit>645</quit>
+        <quest>0</quest>
+        <logout>3174</logout>
+        <total>3819</total>
+    </penalties>
+    <items>
+        <amulet>6</amulet>
+        <charm>16</charm>
+        <helm>0</helm>
+        <boots>13</boots>
+        <gloves>8</gloves>
+        <ring>12</ring>
+        <leggings>0</leggings>
+        <shield>16</shield>
+        <tunic>14</tunic>
+        <weapon>15</weapon>
+        <total>100</total>
+    </items>
+</player>

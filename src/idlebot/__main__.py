@@ -1,14 +1,14 @@
 """An IRC bot for playing IdleRPG."""
 
 import logging
-import random
-import time
+import signal
 
 import click
 from prometheus_client import start_http_server
 
 from . import idlerpg, version
 from .config import AppConfig
+from .player import PlayerInfo
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,6 @@ class MainApp:
         self._initialize_metrics(config.metrics)
 
     def _initialize_bot(self):
-        # fire up the game...
         self.bot = idlerpg.IdleBot(self.config)
 
     def _initialize_metrics(self, port=None):
@@ -36,26 +35,17 @@ class MainApp:
             start_http_server(port)
 
     def __call__(self):
-        # let 'er rip
         self.bot.start()
 
-        # wait for user to quit (Ctrl-C)
         try:
-            while 1:
-                # use a random sleep value...
-                sleep_sec = random.randint(180, 300)
-                time.sleep(sleep_sec)
-
-                # keep status current
-                self.bot.request_status()
-
+            signal.pause()
         except KeyboardInterrupt:
-            print("anceled by user")
+            self.logger.debug("canceled by user")
 
         self.bot.stop()
 
 
-@click.command()
+@click.group()
 @click.option(
     "--config",
     "-f",
@@ -67,14 +57,27 @@ class MainApp:
     package_name=version.__pkgname__,
     prog_name=version.__pkgname__,
 )
-def main(config):
+@click.pass_context
+def main(ctx, config):
     cfg = AppConfig.load(config)
+    ctx.obj = MainApp(cfg)
 
-    app = MainApp(cfg)
 
+@main.command("run")
+@click.pass_obj
+def do_run(app: MainApp):
     app()
 
 
-### MAIN ENTRY
+@main.command("status")
+@click.pass_obj
+def do_status(app: MainApp):
+    info = PlayerInfo.get(app.config.player.name)
+
+    click.echo(f"You are {info.username}, the level {info.level} {info.character}")
+    click.echo(f"Next level: {info.ttl} [{'online' if info.is_online else 'offline'}]")
+
+
+## MAIN ENTRY
 if __name__ == "__main__":
     main()

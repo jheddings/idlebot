@@ -1,55 +1,50 @@
 """Player class for IdleBot."""
 
+import xml.etree.ElementTree as ET
 from datetime import timedelta
+from enum import Enum
+from typing import Optional
 
-from .metrics import PlayerMetrics
+import requests
+from pydantic import field_validator
+from pydantic_xml import BaseXmlModel, element
 
-PLAYER_XML_URL = "http://idlerpg.net/xml.php?player={player}"
+
+class Alignment(str, Enum):
+    NEUTRAL = "n"
+    GOOD = "g"
+    EVIL = "e"
 
 
-class Player:
-    def __init__(self, name, password, class_):
-        self.name = name
-        self.password = password
-        self.character = class_
+class PlayerInfo(BaseXmlModel, tag="player", search_mode="unordered"):
+    username: str = element()
+    character: str = element(tag="class")
+    alignment: Alignment = element(default=Alignment.NEUTRAL)
 
-        self._online = False
-        self._level = None
-        self._next_level = None
+    is_admin: bool = element(default=True, tag="isadmin")
+    is_online: bool = element(default=False, tag="online")
 
-        self._metrics = PlayerMetrics(self)
+    level: Optional[int] = element(default=None)
+    ttl: Optional[timedelta] = element(default=None)
 
-    @property
-    def online(self) -> bool:
-        return self._online
-
-    @online.setter
-    def online(self, value: bool):
-        self._online = value
-        self._metrics.status.set(value)
-
-    @property
-    def level(self) -> int:
-        return self._level
-
-    @level.setter
-    def level(self, value: int):
-        self._level = value
-
-        if value is None:
-            self._metrics.current_level.set(0)
-        else:
-            self._metrics.current_level.set(value)
+    @field_validator("ttl", mode="before")
+    @classmethod
+    def ttl_as_int(cls, raw: str) -> int:
+        # the XML fields all come as strings...  pydantic will try to convert them
+        # as timedelta objects, but the ttl field is really just an integer
+        return int(raw)
 
     @property
-    def next_level(self) -> timedelta:
-        return self._next_level
+    def xml(self):
+        return f"http://www.idlerpg.net/xml.php?player={self.username}"
 
-    @next_level.setter
-    def next_level(self, value: timedelta):
-        self._next_level = value
+    @property
+    def profile(self):
+        return f"http://www.idlerpg.net/playerview.php?player={self.username}"
 
-        if value is None:
-            self._metrics.next_level.set(0)
-        else:
-            self._metrics.next_level.set(value.total_seconds())
+    @classmethod
+    def get(cls, username: str):
+        xml = f"http://www.idlerpg.net/xml.php?player={username}"
+        resp = requests.get(xml)
+        tree = ET.fromstring(resp.content)
+        return cls.from_xml_tree(tree)
