@@ -23,7 +23,9 @@ class MainApp:
 
         self.bot = idlerpg.IdleBot(self.config)
 
-    def _initialize_metrics(self, port=None):
+    def _initialize_metrics(self):
+        port = self.config.metrics
+
         if port is None:
             self.logger.debug("metrics server disabled by config")
         else:
@@ -31,7 +33,7 @@ class MainApp:
             start_http_server(port)
 
     def __call__(self):
-        self._initialize_metrics(self.config.metrics)
+        self._initialize_metrics()
 
         self.bot.start()
 
