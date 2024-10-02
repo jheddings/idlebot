@@ -2,6 +2,8 @@
 
 from prometheus_client import Gauge
 
+from idlebot.player import PlayerInfo
+
 PLAYER_STATUS = Gauge(
     "idlerpg_status",
     "The status of the current player.",
@@ -22,9 +24,12 @@ NEXT_LEVEL = Gauge(
 
 
 class PlayerMetrics:
-    def __init__(self, player):
-        self._player = player
+    def __init__(self, username):
+        self.status = PLAYER_STATUS.labels(player=username)
+        self.current_level = PLAYER_LEVEL.labels(player=username)
+        self.next_level = NEXT_LEVEL.labels(player=username)
 
-        self.status = PLAYER_STATUS.labels(player=player.name)
-        self.current_level = PLAYER_LEVEL.labels(player=player.name)
-        self.next_level = NEXT_LEVEL.labels(player=player.name)
+    def update(self, info: PlayerInfo):
+        self.status.set(1 if info.is_online else 0)
+        self.current_level.set(info.level)
+        self.next_level.set(info.ttl.total_seconds())

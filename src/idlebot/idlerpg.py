@@ -5,6 +5,7 @@ import logging
 
 from . import irc
 from .config import AppConfig, IRCConfig, PlayerConfig
+from .metrics import PlayerMetrics
 from .player import PlayerInfo
 
 logger = logging.getLogger(__name__)
@@ -14,14 +15,13 @@ class IdleBot:
     def __init__(self, conf: AppConfig):
         self.logger = logger.getChild("IdleBot")
 
-        self.rpg_channel = conf.idlerpg.game_channel
-        self.rpg_bot = conf.idlerpg.game_bot
-
-        self._pending_status_request = None
-
-        self._initialize_client(conf.irc)
+        self.channel = conf.idlerpg.game_channel
+        self.game_bot = conf.idlerpg.game_bot
 
         self._config = conf
+        self._metrics = PlayerMetrics(conf.player.name)
+
+        self._initialize_client(conf.irc)
 
     def _initialize_client(self, conf: IRCConfig):
         self.irc_server = conf.server
@@ -38,28 +38,28 @@ class IdleBot:
     def stop(self):
         if self.client.connected is True:
             # clean everything up gracefully
-            self.client.msg(self.rpg_bot, "LOGOUT")
-            self.client.part(self.rpg_channel, "goodbye")
+            self.client.msg(self.game_bot, "LOGOUT")
+            self.client.part(self.channel, "goodbye")
             self.client.quit()
 
     def _register_player(self, player: PlayerConfig):
         self.logger.info("registering new player: %s", player.name)
         register = f"REGISTER {player.name} {player.password} {player.class_}"
-        self.client.msg(self.rpg_bot, register)
+        self.client.msg(self.game_bot, register)
 
     def _join_rpg_game(self, client: irc.Client):
         pcfg = self._config.player
 
         self.logger.info(
             "joining IdleRPG: %s [%s]",
-            self.rpg_channel,
+            self.channel,
             pcfg.name,
         )
 
         login_msg = f"LOGIN {pcfg.name} {pcfg.password}"
 
-        client.join(self.rpg_channel)
-        client.msg(self.rpg_bot, login_msg)
+        client.join(self.channel)
+        client.msg(self.game_bot, login_msg)
 
     def _log_player_status(self):
         # NOTE this status is often behind the actual game
@@ -73,6 +73,8 @@ class IdleBot:
             player.ttl,
             "online" if player.is_online else "offline",
         )
+
+        self._metrics.update(player)
 
     def _on_welcome(self, client: irc.Client, txt):
         self.logger.debug("welcome received")
