@@ -21,10 +21,6 @@ class MainApp:
 
         self.config = config
 
-        self._initialize_bot()
-        self._initialize_metrics(config.metrics)
-
-    def _initialize_bot(self):
         self.bot = idlerpg.IdleBot(self.config)
 
     def _initialize_metrics(self, port=None):
@@ -35,6 +31,8 @@ class MainApp:
             start_http_server(port)
 
     def __call__(self):
+        self._initialize_metrics(self.config.metrics)
+
         self.bot.start()
 
         try:
@@ -76,6 +74,20 @@ def do_status(app: MainApp):
 
     click.echo(f"You are {info.username}, the level {info.level} {info.character}")
     click.echo(f"Next level: {info.ttl} [{'online' if info.is_online else 'offline'}]")
+
+
+@main.command("healthz")
+@click.pass_obj
+def do_healthz(app: MainApp):
+    uname = app.config.player.name
+
+    app.logger.debug("healthz check: %s", uname)
+    info = PlayerInfo.get(uname)
+
+    if not info.is_online:
+        raise click.ClickException("Player is offline")
+
+    click.echo("Player is online")
 
 
 ## MAIN ENTRY
