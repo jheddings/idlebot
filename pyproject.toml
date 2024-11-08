@@ -17,7 +17,7 @@ pydantic-xml = "^2.13.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.0.1"
-ruff = "^0.7.2"
+ruff = "^0.7.3"
 coverage = "^7.6.4"
 pytest = "^8.3.3"
 gitpython = "^3.1.43"
