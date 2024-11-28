@@ -548,13 +548,13 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydantic-xml"
-version = "2.14.0"
+version = "2.14.1"
 description = "pydantic xml extension"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pydantic_xml-2.14.0-py3-none-any.whl", hash = "sha256:01a64132ccf7921c6b3aac4fa7912dcd6d1858b1ea6087f0518d7af0bc2d2d7d"},
-    {file = "pydantic_xml-2.14.0.tar.gz", hash = "sha256:f6dadf6a2783598826f3b406c8e5ff5a2fc19994f48e9fd75f596279643ff59a"},
+    {file = "pydantic_xml-2.14.1-py3-none-any.whl", hash = "sha256:7d794a6c7db7b0aef521fa3ccf589b19ed3df63bb1aeac5017583ff28763d973"},
+    {file = "pydantic_xml-2.14.1.tar.gz", hash = "sha256:75969a2a5bb361588e1a07b045875ac7b168eb9a937e0aff483ca31a02f2b7e2"},
 ]
 
 [package.dependencies]
@@ -757,4 +757,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "defb7b8a502aba1011a0a41a90d567c018dc63a002c9ff30c3e04af4012bfcb5"
+content-hash = "7ac742af4e8198cb53319574fd143280c9b2c660630d331c5d6790223d07d0e1"
