@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "idlebot"
-version = "2.2.1"
+version = "2.3.0"
 description = "A simple IRC bot for playing IdleRPG."
 authors = ["jheddings <jheddings@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.13.1"
 pydantic = "^2.10.4"
 click = "^8.1.8"
 pyyaml = "^6.0.2"
