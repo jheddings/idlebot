@@ -20,7 +20,7 @@ pre-commit = "^4.2.0"
 ruff = "^0.12.4"
 coverage = "^7.9.2"
 pytest = "^8.4.1"
-gitpython = "^3.1.44"
+gitpython = "^3.1.45"
 
 [tool.ruff]
 line-length = 88
