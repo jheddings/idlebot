@@ -1,6 +1,6 @@
 [project]
 name = "idlebot"
-version = "2.3.3"
+version = "2.3.4"
 description = "A simple IRC bot for playing IdleRPG."
 authors = [{ name = "jheddings", email = "jheddings@gmail.com" }]
 requires-python = ">=3.13,<4"
