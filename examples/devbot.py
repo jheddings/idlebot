@@ -26,14 +26,14 @@ def on_privmsg(client, sender, recip, msg):
     logger.info("Message Received: %s => %s -- %s", sender, recip, msg)
 
     if recip.startswith("#"):
-        client.msg(recip, "echo -- %s" % msg)
+        client.msg(recip, f"echo -- {msg}")
     else:
-        client.msg(sender, "echo -- %s" % msg)
+        client.msg(sender, f"echo -- {msg}")
 
 
 def on_join(client, channel):
     logger.info("Client joined channel: %s", channel)
-    client.msg(channel, "Hello World - %s" % datetime.datetime.now())
+    client.msg(channel, f"Hello World - {datetime.datetime.now()}")
 
 
 def on_part(client, channel, msg):
