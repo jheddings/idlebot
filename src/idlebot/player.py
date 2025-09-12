@@ -3,7 +3,6 @@
 import xml.etree.ElementTree as ET
 from datetime import timedelta
 from enum import Enum
-from typing import Optional
 
 import requests
 from pydantic import field_validator
@@ -24,8 +23,8 @@ class PlayerInfo(BaseXmlModel, tag="player", search_mode="unordered"):
     is_admin: bool = element(default=True, tag="isadmin")
     is_online: bool = element(default=False, tag="online")
 
-    level: Optional[int] = element(default=None)
-    ttl: Optional[timedelta] = element(default=None)
+    level: int | None = element(default=None)
+    ttl: timedelta | None = element(default=None)
 
     @field_validator("ttl", mode="before")
     @classmethod

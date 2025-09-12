@@ -4,7 +4,6 @@ import logging
 import logging.config
 import os
 import os.path
-from typing import Dict, Optional
 
 import yaml
 from pydantic import BaseModel, Field
@@ -14,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class PlayerConfig(BaseModel):
     name: str
-    password: Optional[str] = None
+    password: str | None = None
     class_: str = Field(alias="class", default="Bot")
 
 
@@ -24,7 +23,7 @@ class IRCConfig(BaseModel):
 
     server: str = "moo.slashnet.org"
     port: int = 6667
-    passwd: Optional[str] = None
+    passwd: str | None = None
 
 
 class IdleRPGConfig(BaseModel):
@@ -38,8 +37,8 @@ class AppConfig(BaseModel):
     irc: IRCConfig
     idlerpg: IdleRPGConfig
     player: PlayerConfig
-    metrics: Optional[int] = None
-    logging: Optional[Dict] = None
+    metrics: int | None = None
+    logging: dict | None = None
 
     @classmethod
     def load(cls, config_file):

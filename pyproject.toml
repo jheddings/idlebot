@@ -1,26 +1,38 @@
-[tool.poetry]
+[project]
 name = "idlebot"
 version = "2.3.3"
 description = "A simple IRC bot for playing IdleRPG."
-authors = ["jheddings <jheddings@gmail.com>"]
-license = "MIT"
+authors = [{ name = "jheddings", email = "jheddings@gmail.com" }]
+requires-python = ">=3.13,<4"
 readme = "README.md"
+license = "MIT"
+dependencies = [
+    "pydantic>=2.11.7,<3",
+    "click>=8.2.1,<9",
+    "pyyaml>=6.0.2,<7",
+    "prometheus-client>=0.22.1,<0.23",
+    "requests>=2.32.5,<3",
+    "pydantic-xml>=2.17.3,<3",
+]
 
-[tool.poetry.dependencies]
-python = "^3.13"
-pydantic = "^2.11.7"
-click = "^8.2.1"
-pyyaml = "^6.0.2"
-prometheus-client = "^0.22.1"
-requests = "^2.32.5"
-pydantic-xml = "^2.17.3"
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0,<5",
+    "ruff>=0.13.0,<0.14",
+    "coverage>=7.10.6,<8",
+    "pytest>=8.4.2,<9",
+    "gitpython>=3.1.45,<4",
+]
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^4.3.0"
-ruff = "^0.13.0"
-coverage = "^7.10.6"
-pytest = "^8.4.2"
-gitpython = "^3.1.45"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/idlebot"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 88
@@ -51,7 +63,3 @@ line-ending = "auto"
 
 [tool.ruff.isort]
 known-first-party = ["idlebot"]
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
