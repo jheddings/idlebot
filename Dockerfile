@@ -1,13 +1,16 @@
 FROM python:3.13
 
-COPY etc/example_config.yaml /etc/idlebot.yaml
+COPY --from=ghcr.io/astral-sh/uv:0.8.17 /uv /uvx /usr/local/bin/
+ENV PATH="/app/.venv/bin:$PATH"
 
-COPY src uv.lock pyproject.toml README.md /tmp/idlebot/
-RUN pip3 install /tmp/idlebot/ && rm -Rf /tmp/idlebot
+WORKDIR /app
+
+COPY src uv.lock pyproject.toml README.md /app/
+RUN uv sync --locked --no-dev
 
 # commands must be presented as an array, otherwise it will be launched
-# using a shell, which causes problems handling signals for shutdown (#15)
-ENTRYPOINT ["python3", "-m", "idlebot"]
+# using a shell, which causes problems handling signals for shutdown
+ENTRYPOINT ["python", "-m", "idlebot"]
 
 # allow local callers to change the config file
 CMD ["--config=/etc/idlebot.yaml", "run"]

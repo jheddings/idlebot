@@ -42,7 +42,7 @@ run: venv
 .PHONY: runc
 runc: build
 	docker container run --rm --tty --volume "$(BASEDIR):/opt/idlebot" \
-		"$(APPNAME):dev" --config=/opt/idlebot/local.yaml
+		"$(APPNAME):dev" --config=/opt/idlebot/local.yaml run
 
 
 .PHONY: static-checks
