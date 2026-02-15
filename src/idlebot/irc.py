@@ -177,9 +177,7 @@ class Client:
         self.connected = False
 
         if daemon is True:
-            self.daemon = threading.Thread(
-                name="IRC.Client.Daemon", target=self.communicate
-            )
+            self.daemon = threading.Thread(name="IRC.Client.Daemon", target=self.communicate)
             self.daemon.setDaemon(True)
         else:
             self.daemon = None

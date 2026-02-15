@@ -6,9 +6,7 @@ import time
 
 from idlebot import irc
 
-logging.basicConfig(
-    level=logging.DEBUG, format="[%(levelname)s] (%(threadName)s) %(message)s"
-)
+logging.basicConfig(level=logging.DEBUG, format="[%(levelname)s] (%(threadName)s) %(message)s")
 
 logger = logging.getLogger("PyBot")
 

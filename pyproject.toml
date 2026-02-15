@@ -22,6 +22,7 @@ dev = [
     "coverage>=7.13.4,<8",
     "pytest>=9.0.2,<10",
     "gitpython>=3.1.46,<4",
+    "pyright>=1.1.408",
 ]
 
 [build-system]
@@ -33,9 +34,18 @@ packages = ["src/idlebot"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
 
 [tool.ruff]
-line-length = 88
+line-length = 100
 indent-width = 4
 
 [tool.ruff.lint]
@@ -61,5 +71,12 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["idlebot"]
+
+[tool.pyright]
+pythonVersion = "3.14"
+include = ["src"]
+typeCheckingMode = "basic"
+reportMissingImports = true
+reportMissingTypeStubs = false
