@@ -1,3 +1,4 @@
+---
 # idlebot configuration file
 
 # to enable prometheus metrics, uncomment the following line
@@ -48,7 +49,7 @@ logging:
       formatter: brief
       stream: ext://sys.stdout
     logfile:
-      class : logging.FileHandler
+      class: logging.FileHandler
       formatter: precise
       filename: /var/log/idlebot.log
       mode: w
