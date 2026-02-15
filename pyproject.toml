@@ -12,7 +12,7 @@ dependencies = [
     "pyyaml>=6.0.3,<7",
     "prometheus-client>=0.24.1,<0.25",
     "requests>=2.32.5,<3",
-    "pydantic-xml>=2.18.0,<3",
+    "pydantic-xml>=2.19.0,<3",
 ]
 
 [dependency-groups]
