@@ -2,14 +2,14 @@
 
 import xml.etree.ElementTree as ET
 from datetime import timedelta
-from enum import Enum
+from enum import StrEnum
 
 import requests
 from pydantic import field_validator
 from pydantic_xml import BaseXmlModel, element
 
 
-class Alignment(str, Enum):
+class Alignment(StrEnum):
     NEUTRAL = "n"
     GOOD = "g"
     EVIL = "e"

@@ -23,6 +23,13 @@ uv.lock: venv
 	uv lock
 
 
+.PHONY: tidy
+tidy: venv uv.lock
+	$(WITH_VENV) ruff format "$(SRCDIR)" "$(BASEDIR)/tests"
+	$(WITH_VENV) ruff check --fix "$(SRCDIR)" "$(BASEDIR)/tests"
+	$(WITH_VENV) pyright "$(SRCDIR)" "$(BASEDIR)/tests"
+
+
 .PHONY: build
 build: preflight
 	docker image build --tag "$(APPNAME):dev" "$(BASEDIR)"
@@ -45,8 +52,8 @@ runc: build
 		"$(APPNAME):dev" --config=/opt/idlebot/local.yaml run
 
 
-.PHONY: static-checks
-static-checks: venv
+.PHONY: precommit
+precommit: venv
 	$(WITH_VENV) pre-commit run --all-files --verbose
 
 
@@ -70,7 +77,7 @@ coverage: coverage-report coverage-html
 
 
 .PHONY: preflight
-preflight: static-checks unit-tests coverage-report
+preflight: precommit unit-tests coverage-report
 
 
 .PHONY: clean
