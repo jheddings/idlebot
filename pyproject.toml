@@ -7,7 +7,7 @@ requires-python = ">=3.14.4,<4"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-    "pydantic>=2.13.3,<3",
+    "pydantic>=2.13.4,<3",
     "click>=8.3.3,<9",
     "pyyaml>=6.0.3,<7",
     "prometheus-client>=0.25.0,<0.26",
