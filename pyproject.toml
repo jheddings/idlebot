@@ -22,7 +22,7 @@ dev = [
     "coverage>=7.14.1,<8",
     "pytest>=9.0.3,<10",
     "gitpython>=3.1.50,<4",
-    "pyright>=1.1.409",
+    "pyright>=1.1.410",
 ]
 
 [build-system]
