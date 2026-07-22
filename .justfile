@@ -36,8 +36,8 @@ test: setup
 preflight: check test
 
 # run idlebot from source
-run *args: setup
-  uv run python3 -m idlebot --config "{{basedir}}/local.yaml" {{args}}
+run: setup
+  uv run python3 -m idlebot --config "{{basedir}}/local.yaml" run
 
 # generate coverage reports
 coverage: test

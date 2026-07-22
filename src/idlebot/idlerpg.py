@@ -5,6 +5,7 @@ import logging
 
 from . import irc
 from .config import AppConfig, IRCConfig, PlayerConfig
+from .metrics import PlayerMetrics
 from .player import PlayerInfo
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,8 @@ class IdleBot:
         self.rpg_bot = conf.idlerpg.game_bot
 
         self._pending_status_request = None
+
+        self._metrics = PlayerMetrics(conf.player.name)
 
         self._initialize_client(conf.irc)
 
@@ -73,6 +76,8 @@ class IdleBot:
             player.ttl,
             "online" if player.is_online else "offline",
         )
+
+        self._metrics.update(player)
 
     def _on_welcome(self, client: irc.Client, txt):
         self.logger.debug("welcome received")
