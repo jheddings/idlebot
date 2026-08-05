@@ -10,7 +10,7 @@ dependencies = [
     "pydantic>=2.13.4,<3",
     "click>=8.4.2,<9",
     "pyyaml>=6.0.3,<7",
-    "prometheus-client>=0.25.0,<0.26",
+    "prometheus-client>=0.26.0,<0.27",
     "requests>=2.34.2,<3",
     "pydantic-xml>=2.21.0,<3",
 ]
